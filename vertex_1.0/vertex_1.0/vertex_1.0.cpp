@@ -15,7 +15,7 @@ int main() {
     // Инициализация окна
     const int screenWidth = 800;
     const int screenHeight = 600;
-    InitWindow(screenWidth, screenHeight, "Simple RPG Game");
+    InitWindow(screenWidth, screenHeight, "Simple RPG Game with Mouse Control");
 
     // Создание игрока
     Player player = { {screenWidth / 2, screenHeight / 2}, 100, 10 };
@@ -28,9 +28,17 @@ int main() {
         if (IsKeyDown(KEY_LEFT)) player.position.x -= 5.0f;
         if (IsKeyDown(KEY_UP)) player.position.y -= 5.0f;
         if (IsKeyDown(KEY_DOWN)) player.position.y += 5.0f;
+        if (IsKeyDown(KEY_D)) player.position.x += 5.0f;
+        if (IsKeyDown(KEY_A)) player.position.x -= 5.0f;
+        if (IsKeyDown(KEY_W)) player.position.y -= 5.0f;
+        if (IsKeyDown(KEY_S)) player.position.y += 5.0f;
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            Vector2 mousePosition = GetMousePosition();
+            player.position = mousePosition; // Перемещение игрока к позиции курсора
+        }
 
         // Логика игры (например, столкновения, бой и т.д.) может быть добавлена здесь
-        //Изменение
+
         // Отрисовка
         BeginDrawing();
         ClearBackground(RAYWHITE);
