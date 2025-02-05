@@ -30,7 +30,7 @@ int main() {
         if (IsKeyDown(KEY_DOWN)) player.position.y += 5.0f;
 
         // Логика игры (например, столкновения, бой и т.д.) может быть добавлена здесь
-        // Изменение
+        
         // Отрисовка
         BeginDrawing();
         ClearBackground(RAYWHITE);
