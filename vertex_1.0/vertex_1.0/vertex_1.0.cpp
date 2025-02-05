@@ -1,20 +1,44 @@
-﻿// vertex_1.0.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
+﻿#include "raylib.h"
 
-#include <iostream>
+struct Player {
+    Vector2 position;
+    int health;
+    int attack;
+};
 
-int main()
-{
-    std::cout << "Hello World!\n";
+void DrawPlayer(Player player) {
+    DrawRectangle(player.position.x, player.position.y, 50, 50, BLUE);
+    DrawText(TextFormat("Health: %d", player.health), player.position.x, player.position.y - 20, 20, WHITE);
 }
 
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
+int main() {
+    // Инициализация окна
+    const int screenWidth = 800;
+    const int screenHeight = 600;
+    InitWindow(screenWidth, screenHeight, "Simple RPG Game");
 
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
+    // Создание игрока
+    Player player = { {screenWidth / 2, screenHeight / 2}, 100, 10 };
+
+    SetTargetFPS(60); // Установка FPS
+
+    while (!WindowShouldClose()) {
+        // Обработка ввода
+        if (IsKeyDown(KEY_RIGHT)) player.position.x += 5.0f;
+        if (IsKeyDown(KEY_LEFT)) player.position.x -= 5.0f;
+        if (IsKeyDown(KEY_UP)) player.position.y -= 5.0f;
+        if (IsKeyDown(KEY_DOWN)) player.position.y += 5.0f;
+
+        // Логика игры (например, столкновения, бой и т.д.) может быть добавлена здесь
+
+        // Отрисовка
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        DrawPlayer(player);
+        EndDrawing();
+    }
+
+    // Закрытие окна
+    CloseWindow();
+    return 0;
+}
