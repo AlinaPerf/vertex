@@ -36,6 +36,8 @@ void DrawPlayer(Player player) {
         break;
     }
 }
+
+
 int main() {
     // Инициализация окна    
     const int screenWidth = 1600;
