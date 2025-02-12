@@ -15,52 +15,39 @@ struct Enemy {
 	int health;
 	int attack;
 };
-enum Location {
-	LOCATION_1,
-	LOCATION_2,
-	LOCATION_3,
-	LOCATION_4,
-	LOCATION_5,
-	LOCATION_COUNT
-};
 
-struct LocationInfo {// Информационное окно
+struct LocationInfo {
 	Rectangle bounds;
-	const char* name;
+	std::string name;
+	Color color;
+	int id;
 };
-
-void DrawPlayer(Player player) {
-	DrawRectangle(player.position.x, player.position.y, 50, 50, BLUE);
-	DrawText(TextFormat("HP: %d", player.health), player.position.x, player.position.y - 20, 20, RED);
-}
-
-void DrawEnemy(Enemy enemy) {
-	DrawRectangle(enemy.position.x, enemy.position.y, 50, 50, GREEN);
-	DrawText(TextFormat("HP: %d", enemy.health), enemy.position.x, enemy.position.y - 20, 20, RED);
-}
-void DrawLocations() {
-	// Отрисовка локаций
-	DrawRectangle(50, 50, 75, 75, RED); // Location 1
-	DrawText("Location 1: Start", 50, 50, 10, BLACK);
-
-	DrawRectangle(1000, 150, 75, 75, GREEN); // Location 2
-	DrawText("Location 2: Forest", 1000, 150, 10, BLACK);
-
-	DrawRectangle(150, 600, 75, 75, BROWN); // Location 3
-	DrawText("Location 3: Cave", 150, 600, 10, BLACK);
-
-	DrawRectangle(150, 150, 75, 75, BLUE); // Location 4
-	DrawText("Location 4: Castle", 150, 150, 10, BLACK);
-
-	DrawRectangle(1000, 600, 75, 75, GRAY); // Location 5
-	DrawText("Location 5: Village", 1000, 600, 10, BLACK);
-}
-
 // Инициализация окна    
 const int screenWidth = 1600;
 const int screenHeight = 800;
 Player player = { {screenWidth / 2, screenHeight / 2}, 100, 10 };
-Location currentLocation = LOCATION_1;
+std::vector<LocationInfo> locations;
+int currentLocation = 0;
+
+void DrawPlayer(Player player) {
+	DrawRectangle(player.position.x, player.position.y, 50, 50, BLACK);
+	DrawText(TextFormat("HP: %d", player.health), player.position.x, player.position.y - 20, 20, RED);
+}
+
+void DrawEnemy(Enemy enemy) {
+	DrawRectangle((int)enemy.position.x, (int)enemy.position.y, 50, 50, GREEN);
+	DrawText(TextFormat("HP: %d", enemy.health), (int)enemy.position.x, (int)enemy.position.y - 20, 20, RED);
+}
+void DrawLocations() {
+
+	for (int i = 0; i < locations.size(); i++)
+	{
+		DrawRectangleRec(locations[i].bounds, locations[i].color);
+		std::string locationName = "Location" + (i + 1) + locations[i].name;
+		DrawText(locationName.c_str(), locations[i].bounds.x, locations[i].bounds.y, 10, BLACK);
+	}
+
+}
 
 void LocationScreen() {
 	// Обработка ввода        
@@ -79,16 +66,13 @@ void LocationScreen() {
 	}
 
 	// Проверка на столкновение с локациями
-	for (int i = 0; i < LOCATION_COUNT; i++) {
-		if (CheckCollisionRecs((Rectangle)(player.position.x, player.position.y, 50, 50), locations[i].bounds)) {
+	for (int i = 0; i < locations.size(); i++) {
+		if (CheckCollisionRecs({ player.position.x, player.position.y, 50, 50 }, locations[i].bounds)) {
 			if (IsKeyPressed(KEY_ENTER)) {
+				currentLocation = locations[i].id;
 				// Открытие нового окна для информации о локации
-				DrawText(locations[i].name, screenWidth / 2 - MeasureText(locations[i].name, 20) / 2, screenHeight / 2, 20, BLACK);
+				DrawText(locations[i].name.c_str(), screenWidth / 2 - MeasureText(locations[i].name.c_str(), 20) / 2, screenHeight / 2, 20, BLACK);
 				DrawText("Press ESC to return", screenWidth / 2 - MeasureText("Press ESC to return", 20) / 2, screenHeight / 2 + 30, 20, BLACK);
-				EndDrawing();
-				while (!WindowShouldClose()) {
-					if (IsKeyPressed(KEY_ESCAPE)) break; // Закрытие окна при нажатии ESC
-				}
 			}
 		}
 	}
@@ -116,8 +100,65 @@ void LocationScreen() {
 	EndDrawing();
 }
 
-void BattleScreen() {
+void VillageScreen() {
+	if (IsKeyPressed(KEY_Q))
+	{
+		currentLocation = 0;
+	}
+	// Отрисовка        
+	BeginDrawing();
+	//DrawEnemy(enemy);
+	ClearBackground(GRAY);
+	DrawPlayer(player);
+	EndDrawing();
+}
 
+void ForestScreen() {
+	if (IsKeyPressed(KEY_Q))
+	{
+		currentLocation = 0;
+	}
+	// Отрисовка        
+	BeginDrawing();
+	//DrawEnemy(enemy);
+
+	ClearBackground(GREEN);
+	DrawPlayer(player);
+	EndDrawing();
+}
+
+void CaveScreen() {
+	if (IsKeyPressed(KEY_Q))
+	{
+		currentLocation = 0;
+	}
+	// Отрисовка        
+	BeginDrawing();
+	//DrawEnemy(enemy);
+
+	ClearBackground(BROWN);
+	DrawPlayer(player);
+	EndDrawing();
+}
+
+void CastleScreen() {
+	if (IsKeyPressed(KEY_Q))
+	{
+		currentLocation = 0;
+	}
+	// Отрисовка        
+	BeginDrawing();
+	//DrawEnemy(enemy);
+
+	ClearBackground(BLUE);
+	DrawPlayer(player);
+	EndDrawing();
+}
+void BattleScreen() {
+	if (IsKeyPressed(KEY_Q))
+	{
+		currentLocation = 0;
+	}
 	// Отрисовка        
 	BeginDrawing();
 	//DrawEnemy(enemy);
@@ -127,14 +168,98 @@ void BattleScreen() {
 	EndDrawing();
 }
 
+void InitializeGame() {
+	LocationInfo location1 = {
+		{ 50, 50, 75, 75},
+			"Start",
+			RED,
+			1
+	};
+	locations.push_back(location1);
+
+	LocationInfo location2 = {
+		{ 1000, 150, 75, 75 },
+			"Forest",
+			GREEN,
+			2
+	};
+	locations.push_back(location2);
+
+	LocationInfo location3 = {
+		{ 150, 600, 75, 75 },
+		"Cave",
+			BROWN,
+			3
+	};
+	locations.push_back(location3);
+
+	LocationInfo location4 = {
+		{ 150, 150, 75, 75 },
+		"Castle",
+			BLUE,
+			4
+	};
+	locations.push_back(location4);
+
+	LocationInfo location5 = {
+		{ 1000, 600, 75, 75 },
+		"Village",
+			GRAY,
+			5
+	};
+	locations.push_back(location5);
+
+	//	// Отрисовка локаций
+	//	DrawRectangle(50, 50, 75, 75, RED); // Location 1
+	//	DrawText("Location 1: Start", 50, 50, 10, BLACK);
+	//
+	//	DrawRectangle(1000, 150, 75, 75, GREEN); // Location 2
+	//	DrawText("Location 2: Forest", 1000, 150, 10, BLACK);
+	//
+	//	DrawRectangle(150, 600, 75, 75, BROWN); // Location 3
+	//	DrawText("Location 3: Cave", 150, 600, 10, BLACK);
+	//
+	//	DrawRectangle(150, 150, 75, 75, BLUE); // Location 4
+	//	DrawText("Location 4: Castle", 150, 150, 10, BLACK);
+	//
+	//	DrawRectangle(1000, 600, 75, 75, GRAY); // Location 5
+	//	DrawText("Location 5: Village", 1000, 600, 10, BLACK);
+
+}
+
 int main() {
 	InitWindow(screenWidth, screenHeight, "Game with Locations");
 	// Создание игрока
 	SetTargetFPS(60); // Установка FPS
-
+	InitializeGame();
 
 	while (!WindowShouldClose()) {
-		LocationScreen();
+		switch (currentLocation)
+		{
+		case 0:
+			LocationScreen();
+			break;
+		case 1:
+			BattleScreen();
+			break;
+		case 2:
+			ForestScreen();
+			break;
+
+		case 3:
+			CaveScreen();
+			break;
+		case 4:
+			CastleScreen();
+			break;
+		case 5:
+			VillageScreen();
+			break;
+		default:
+			break;
+		}
+
+		//LocationScreen();
 		//BattleScreen();
 	}
 
