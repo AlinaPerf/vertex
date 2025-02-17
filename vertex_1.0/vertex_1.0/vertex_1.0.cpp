@@ -100,6 +100,23 @@ void LocationScreen() {
 	EndDrawing();
 }
 
+//текстуры
+void Textur() {
+
+Texture2D texture = LoadTexture("resources/леса.png");
+
+Shader shader = LoadShader(0, TextFormat("resources/shaders/glsl%i/wave.fs"));
+
+int freqXLoc = GetShaderLocation(shader, "freqX");
+int freqYLoc = GetShaderLocation(shader, "freqY");
+int ampXLoc = GetShaderLocation(shader, "ampX");
+int ampYLoc = GetShaderLocation(shader, "ampY");
+int speedXLoc = GetShaderLocation(shader, "speedX");
+int speedYLoc = GetShaderLocation(shader, "speedY");
+
+return;
+}
+
 void VillageScreen() {
 	if (IsKeyPressed(KEY_Q))
 	{
@@ -149,7 +166,7 @@ void CastleScreen() {
 	// Отрисовка        
 	BeginDrawing();
 	//DrawEnemy(enemy);
-
+	Textur();
 	ClearBackground(BLUE);
 	DrawPlayer(player);
 	EndDrawing();
