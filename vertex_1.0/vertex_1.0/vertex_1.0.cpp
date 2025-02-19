@@ -9,6 +9,7 @@ struct Player {
 	Vector2 position;
 	int health;
 	int attack;
+	Texture2D Body;
 };
 struct Enemy {
 	Vector2 position;
@@ -21,16 +22,30 @@ struct LocationInfo {
 	std::string name;
 	Color color;
 	int id;
+	Texture2D Texture { 0 }; // Переменная для текстуры леса
 };
+
+const char* Wind_filename = "./Assets/Locations/wind.png";
+const char* Castle_filename = "./Assets/Locations/castle.png";
+const char* Cave_filename = "./Assets/Locations/cave.png";
+const char* Village_filename = "./Assets/Locations/village.png";
+const char* Start_filename = "./Assets/Locations/start.png";
+const char* Forest_filename = "./Assets/Locations/forest.png";
+const char* Priest_filename = "./Assets/Player/Priest.png";
+
 // Инициализация окна    
 const int screenWidth = 1600;
 const int screenHeight = 800;
-Player player = { {screenWidth / 2, screenHeight / 2}, 100, 10 };
+
+ Image image = LoadImage(Wind_filename);
+ 
+
+Player player = {0};
 std::vector<LocationInfo> locations;
 int currentLocation = 0;
-
 void DrawPlayer(Player player) {
-	DrawRectangle(player.position.x, player.position.y, 50, 50, BLACK);
+	//DrawRectangle(player.position.x, player.position.y, 50, 50, BLACK);
+	DrawTexture(player.Body,player.position.x, player.position.y, RAYWHITE);
 	DrawText(TextFormat("HP: %d", player.health), player.position.x, player.position.y - 20, 20, RED);
 }
 
@@ -49,7 +64,7 @@ void DrawLocations() {
 
 }
 
-void LocationScreen() {
+void HandleInput() {
 	// Обработка ввода        
 	if (IsKeyDown(KEY_RIGHT)) player.position.x += 5.0f;
 	if (IsKeyDown(KEY_LEFT)) player.position.x -= 5.0f;
@@ -64,7 +79,11 @@ void LocationScreen() {
 		player.position = mousePosition;
 		// Перемещение игрока к позиции курсора
 	}
+}
+void LocationScreen(LocationInfo info) {
+	// Обработка ввода        
 
+	HandleInput();
 	// Проверка на столкновение с локациями
 	for (int i = 0; i < locations.size(); i++) {
 		if (CheckCollisionRecs({ player.position.x, player.position.y, 50, 50 }, locations[i].bounds)) {
@@ -93,184 +112,231 @@ void LocationScreen() {
 
 	// Отрисовка        
 	BeginDrawing();
-
 	ClearBackground(RAYWHITE);
+	DrawTexture(info.Texture,0,0,RAYWHITE);
 	DrawPlayer(player);
 	DrawLocations(); // Отрисовка всех локаций
 	EndDrawing();
 }
 
-//текстуры
-void Textur() {
 
-Texture2D texture = LoadTexture("resources/леса.png");
-
-Shader shader = LoadShader(0, TextFormat("resources/shaders/glsl%i/wave.fs"));
-
-int freqXLoc = GetShaderLocation(shader, "freqX");
-int freqYLoc = GetShaderLocation(shader, "freqY");
-int ampXLoc = GetShaderLocation(shader, "ampX");
-int ampYLoc = GetShaderLocation(shader, "ampY");
-int speedXLoc = GetShaderLocation(shader, "speedX");
-int speedYLoc = GetShaderLocation(shader, "speedY");
-
-return;
-}
-
-void VillageScreen() {
+void VillageScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
 	}
+	HandleInput();
 	// Отрисовка        
 	BeginDrawing();
 	//DrawEnemy(enemy);
 	ClearBackground(GRAY);
+	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player);
 	EndDrawing();
 }
 
-void ForestScreen() {
-	if (IsKeyPressed(KEY_Q))
-	{
-		currentLocation = 0;
+void ForestScreen(LocationInfo& info) {
+	if (IsKeyPressed(KEY_Q)) {
+		currentLocation = 0; // Возврат в основное меню
 	}
+
+	HandleInput();
 	// Отрисовка        
 	BeginDrawing();
-	//DrawEnemy(enemy);
+	ClearBackground(GREEN); // Фон для леса
 
-	ClearBackground(GREEN);
-	DrawPlayer(player);
+	// Отрисовка текстуры
+	DrawTexture(info.Texture, 0, 0, WHITE); // Отрисовка текстуры в верхнем левом углу
+
+	DrawPlayer(player); // Отрисовка игрока
 	EndDrawing();
 }
 
-void CaveScreen() {
+void CaveScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
 	}
+
+	HandleInput();
 	// Отрисовка        
 	BeginDrawing();
 	//DrawEnemy(enemy);
-
 	ClearBackground(BROWN);
+	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player);
 	EndDrawing();
 }
 
-void CastleScreen() {
+void CastleScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
 	}
+
+	HandleInput();
 	// Отрисовка        
 	BeginDrawing();
 	//DrawEnemy(enemy);
-	Textur();
+	Texture();
 	ClearBackground(BLUE);
+	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player);
 	EndDrawing();
 }
-void BattleScreen() {
+void BattleScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
 	}
+
+	HandleInput();
 	// Отрисовка        
 	BeginDrawing();
 	//DrawEnemy(enemy);
 
 	ClearBackground(RAYWHITE);
+	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player);
 	EndDrawing();
 }
 
 void InitializeGame() {
+	Image image = LoadImage(Wind_filename);
+	Texture2D texture = {0};
+	if (image.data != NULL)
+	{
+		ImageResize(&image, screenWidth, screenHeight);
+		texture=LoadTextureFromImage(image);
+		
+	}
 	LocationInfo location1 = {
 		{ 50, 50, 75, 75},
 			"Start",
 			RED,
-			1
+			1,
+			texture
 	};
 	locations.push_back(location1);
 
+	image = LoadImage(Forest_filename);
+	texture = { 0 };
+	if (image.data != NULL)
+	{
+		ImageResize(&image, screenWidth, screenHeight);
+		texture = LoadTextureFromImage(image);
+
+	}
 	LocationInfo location2 = {
 		{ 1000, 150, 75, 75 },
 			"Forest",
 			GREEN,
-			2
+			2,
+			texture
 	};
 	locations.push_back(location2);
 
+
+	image = LoadImage(Cave_filename);
+	texture = { 0 };
+	if (image.data != NULL)
+	{
+		ImageResize(&image, screenWidth, screenHeight);
+		texture = LoadTextureFromImage(image);
+
+	}
 	LocationInfo location3 = {
 		{ 150, 600, 75, 75 },
 		"Cave",
 			BROWN,
-			3
+			3,
+			texture
 	};
 	locations.push_back(location3);
 
+
+
+	image = LoadImage(Castle_filename);
+	texture = { 0 };
+	if (image.data != NULL)
+	{
+		ImageResize(&image, screenWidth, screenHeight);
+		texture = LoadTextureFromImage(image);
+
+	}
 	LocationInfo location4 = {
 		{ 150, 150, 75, 75 },
 		"Castle",
 			BLUE,
-			4
+			4,
+			texture
 	};
 	locations.push_back(location4);
 
+
+	image = LoadImage(Village_filename);
+	texture = { 0 };
+	if (image.data != NULL)
+	{
+		ImageResize(&image, screenWidth, screenHeight);
+		texture = LoadTextureFromImage(image);
+
+	}
 	LocationInfo location5 = {
 		{ 1000, 600, 75, 75 },
 		"Village",
 			GRAY,
-			5
+			5,
+			texture
 	};
 	locations.push_back(location5);
 
-	//	// Отрисовка локаций
-	//	DrawRectangle(50, 50, 75, 75, RED); // Location 1
-	//	DrawText("Location 1: Start", 50, 50, 10, BLACK);
-	//
-	//	DrawRectangle(1000, 150, 75, 75, GREEN); // Location 2
-	//	DrawText("Location 2: Forest", 1000, 150, 10, BLACK);
-	//
-	//	DrawRectangle(150, 600, 75, 75, BROWN); // Location 3
-	//	DrawText("Location 3: Cave", 150, 600, 10, BLACK);
-	//
-	//	DrawRectangle(150, 150, 75, 75, BLUE); // Location 4
-	//	DrawText("Location 4: Castle", 150, 150, 10, BLACK);
-	//
-	//	DrawRectangle(1000, 600, 75, 75, GRAY); // Location 5
-	//	DrawText("Location 5: Village", 1000, 600, 10, BLACK);
+	image = LoadImage(Priest_filename);
+	if (image.data != NULL)
+	{
+		ImageCrop(&image, { 51,133,41,58 });
+		ImageResize(&image, 50, 50);
+		texture = LoadTextureFromImage(image);
+
+	}
+	player = { 
+		{ screenWidth / 2, screenHeight / 2 }, 100, 10,
+	texture};
 
 }
 
 int main() {
+
 	InitWindow(screenWidth, screenHeight, "Game with Locations");
+
+
 	// Создание игрока
 	SetTargetFPS(60); // Установка FPS
 	InitializeGame();
+
+
 
 	while (!WindowShouldClose()) {
 		switch (currentLocation)
 		{
 		case 0:
-			LocationScreen();
+			LocationScreen(locations[0]);
 			break;
 		case 1:
-			BattleScreen();
+			BattleScreen(locations[0]);
 			break;
 		case 2:
-			ForestScreen();
+			ForestScreen(locations[1]);
 			break;
 
 		case 3:
-			CaveScreen();
+			CaveScreen(locations[2]);
 			break;
 		case 4:
-			CastleScreen();
+			CastleScreen(locations[3]);
 			break;
 		case 5:
-			VillageScreen();
+			VillageScreen(locations[4]);
 			break;
 		default:
 			break;
