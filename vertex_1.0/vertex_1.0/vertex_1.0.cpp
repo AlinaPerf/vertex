@@ -89,7 +89,7 @@ void HandleInput() {
 	if (IsKeyDown(KEY_A)) player_location.position.x -= 5.0f;
 	if (IsKeyDown(KEY_W)) player_location.position.y -= 5.0f;
 	if (IsKeyDown(KEY_S)) player_location.position.y += 5.0f;
-	if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+	if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
 		Vector2 mousePosition = GetMousePosition();
 		player_location.position = mousePosition;
 		// Перемещение игрока к позиции курсора
