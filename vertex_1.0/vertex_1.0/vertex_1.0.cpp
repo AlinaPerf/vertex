@@ -18,6 +18,7 @@ struct Enemy {
 	int attack;
 	Texture2D Body;
 	bool active;
+	Vector2 speed;
 };
 
 struct LocationInfo {
@@ -98,7 +99,7 @@ void HandleInput() {
 void LocationScreen(LocationInfo info) {
 	// Обработка ввода        
 
-	
+
 	HandleInput();
 	// Проверка на столкновение с локациями
 	for (int i = 0; i < locations.size(); i++) {
@@ -203,6 +204,7 @@ void CastleScreen(LocationInfo info) {
 	EndDrawing();
 }
 
+int counter = 0;
 void BattleScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
@@ -210,26 +212,68 @@ void BattleScreen(LocationInfo info) {
 	}
 
 	Vector2 mouse = GetMousePosition();
-	Rectangle button_body = { 10,10,200,200 };
 
+	Rectangle button_body = { 10,650,100,50 };
 	Button button = {
 		button_body,
 		YELLOW,
 	};
 
+	Rectangle button1_body = { 130,650,100,50 };
+	Button button1 = {
+		button1_body,
+		GREEN,
+	};
 
-	if (CheckCollisionPointRec(mouse, button.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+	Rectangle button2_body = { 250,650,100,50 };
+	Button button2 = {
+		button2_body,
+		BLUE,
+	};
+	if (CheckCollisionPointRec(mouse, button.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)&& counter % 2 == 0 && player.speed.x == 0) {
 		player.speed = { 5,0 };
 	}
-	if (CheckCollisionRecs({ player.position.x,player.position.y,100,100 }, { enemy.position.x,enemy.position.y,100,100 })) {
+
+	if (CheckCollisionPointRec(mouse, button1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player.speed.x == 0) {
+		player.speed = { 5,0 };
+	}
+
+	if (CheckCollisionPointRec(mouse, button2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player.speed.x == 0) {
+		player.speed = { 5,0 };
+	}
+	if (CheckCollisionRecs({ player.position.x,player.position.y,100,100 }, { enemy.position.x,enemy.position.y,100,100 }) && counter % 2 == 0) {
 		player.speed = { -5,0 };
+		enemy.health -= player.attack;
 	}
 	if (player.speed.x < 0) {
 		if (player.position.x < screenWidth / 4) {
 			player.speed = { 0,0 };
+			counter++;
 		}
 	}
 	player.position = Vector2Add(player.position, player.speed);
+
+	Rectangle button3_body = { 1490,650,100,50 };
+	Button button3 = {
+		button3_body,
+		RED,
+	};
+	if (CheckCollisionPointRec(mouse, button3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+		enemy.speed = { -5,0 };
+	}
+	if (counter % 2 == 1 && enemy.speed.x == 0)
+		enemy.speed = { -5,0 };
+	if (CheckCollisionRecs({ enemy.position.x,enemy.position.y,100,100 }, { player.position.x,player.position.y,100,100 }) && counter % 2 == 1) {
+		enemy.speed = { 5,0 };
+		player.health -= enemy.attack;
+	}
+	if (enemy.speed.x > 0) {
+		if (enemy.position.x > screenWidth * 3 / 4) {
+			enemy.speed = { 0,0 };
+			counter++;
+		}
+	}
+	enemy.position = Vector2Add(enemy.position, enemy.speed);
 
 	// Отрисовка        
 	BeginDrawing();
@@ -239,6 +283,9 @@ void BattleScreen(LocationInfo info) {
 	DrawPlayer(player);
 	DrawEnemy(enemy);
 	DrawRectangleRec(button.body, button.color);
+	DrawRectangleRec(button1.body, button1.color);
+	DrawRectangleRec(button2.body, button2.color);
+	DrawRectangleRec(button3.body, button3.color);
 	EndDrawing();
 
 }
@@ -365,7 +412,7 @@ void InitializeGame() {
 	if (image.data != NULL)
 	{
 		ImageCrop(&image, { 51,133,41,58 });
-		ImageResize(&image, 200, 200);
+		ImageResize(&image, 100, 100);
 		texture = LoadTextureFromImage(image);
 
 	}
@@ -375,7 +422,8 @@ void InitializeGame() {
 		{0,0} };
 	enemy = {
 		{ screenWidth / 2, screenHeight / 2 }, 100, 10,
-	texture, false };
+	texture, false,
+		{0,0} };
 
 }
 
