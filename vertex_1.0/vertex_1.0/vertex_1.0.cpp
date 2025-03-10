@@ -9,6 +9,7 @@ struct Player {
 	Vector2 position;
 	int health;
 	int attack;
+	int stamina;
 	Texture2D Body;
 	Vector2 speed;
 };
@@ -16,6 +17,7 @@ struct Enemy {
 	Vector2 position;
 	int health;
 	int attack;
+	int stamina;
 	Texture2D Body;
 	bool active;
 	Vector2 speed;
@@ -59,11 +61,13 @@ void DrawPlayer(Player& player) {
 	//DrawRectangle(player.position.x, player.position.y, 50, 50, BLACK);
 	DrawTexture(player.Body, player.position.x, player.position.y, RAYWHITE);
 	DrawText(TextFormat("HP: %d", player.health), player.position.x, player.position.y - 20, 20, RED);
+	DrawText(TextFormat("STAMINA: %d", player.stamina), player.position.x, player.position.y - 50, 20, RED);
 }
 
 void DrawEnemy(Enemy& enemy) {
 	DrawRectangle((int)enemy.position.x, (int)enemy.position.y, 100, 100, RED);
 	DrawText(TextFormat("HP: %d", enemy.health), (int)enemy.position.x, (int)enemy.position.y - 20, 20, RED);
+	DrawText(TextFormat("STAMINA: %d", enemy.stamina), (int)enemy.position.x, (int)enemy.position.y - 50, 20, RED);
 }
 void DrawLocations() {
 
@@ -107,6 +111,7 @@ void LocationScreen(LocationInfo info) {
 			if (IsKeyPressed(KEY_ENTER)) {
 				currentLocation = locations[i].id;
 				player.position = { screenWidth / 4,screenHeight / 2 };
+				player.stamina = 10;
 				enemy.position = { screenWidth * 3 / 4,screenHeight / 2 };
 				// Открытие нового окна для информации о локации
 				DrawText(locations[i].name.c_str(), screenWidth / 2 - MeasureText(locations[i].name.c_str(), 20) / 2, screenHeight / 2, 20, BLACK);
@@ -137,7 +142,6 @@ void LocationScreen(LocationInfo info) {
 	DrawLocations(); // Отрисовка всех локаций
 	EndDrawing();
 }
-
 
 void VillageScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
@@ -205,76 +209,113 @@ void CastleScreen(LocationInfo info) {
 }
 
 int counter = 0;
+Rectangle button_body = { 10,650,100,50 };
+Button button = {
+	button_body,
+	YELLOW,
+};
+
+Rectangle button1_body = { 130,650,100,50 };
+Button button1 = {
+	button1_body,
+	GREEN,
+};
+
+Rectangle button2_body = { 250,650,100,50 };
+Button button2 = {
+	button2_body,
+	BLUE,
+};
+Rectangle button3_body = { 1490,650,100,50 };
+Button button3 = {
+	button3_body,
+	RED,
+};
+Rectangle button4_body = { 1370,650,100,50 };
+Button button4 = {
+	button4_body,
+	BLACK,
+};
+
+bool game_over = false;
 void BattleScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
+		player.health = 100;
+		enemy.health = 100;
+		player.stamina = 0;
+		game_over = false;
 	}
-
-	Vector2 mouse = GetMousePosition();
-
-	Rectangle button_body = { 10,650,100,50 };
-	Button button = {
-		button_body,
-		YELLOW,
-	};
-
-	Rectangle button1_body = { 130,650,100,50 };
-	Button button1 = {
-		button1_body,
-		GREEN,
-	};
-
-	Rectangle button2_body = { 250,650,100,50 };
-	Button button2 = {
-		button2_body,
-		BLUE,
-	};
-	if (CheckCollisionPointRec(mouse, button.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)&& counter % 2 == 0 && player.speed.x == 0) {
-		player.speed = { 5,0 };
-	}
-
-	if (CheckCollisionPointRec(mouse, button1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player.speed.x == 0) {
-		player.speed = { 5,0 };
-	}
-
-	if (CheckCollisionPointRec(mouse, button2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player.speed.x == 0) {
-		player.speed = { 5,0 };
-	}
-	if (CheckCollisionRecs({ player.position.x,player.position.y,100,100 }, { enemy.position.x,enemy.position.y,100,100 }) && counter % 2 == 0) {
-		player.speed = { -5,0 };
-		enemy.health -= player.attack;
-	}
-	if (player.speed.x < 0) {
-		if (player.position.x < screenWidth / 4) {
-			player.speed = { 0,0 };
-			counter++;
+	if (!game_over)
+	{
+		if (player.health <= 0 or enemy.health <= 0) {
+			game_over = true;
 		}
-	}
-	player.position = Vector2Add(player.position, player.speed);
+		Vector2 mouse = GetMousePosition();
 
-	Rectangle button3_body = { 1490,650,100,50 };
-	Button button3 = {
-		button3_body,
-		RED,
-	};
-	if (CheckCollisionPointRec(mouse, button3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-		enemy.speed = { -5,0 };
-	}
-	if (counter % 2 == 1 && enemy.speed.x == 0)
-		enemy.speed = { -5,0 };
-	if (CheckCollisionRecs({ enemy.position.x,enemy.position.y,100,100 }, { player.position.x,player.position.y,100,100 }) && counter % 2 == 1) {
-		enemy.speed = { 5,0 };
-		player.health -= enemy.attack;
-	}
-	if (enemy.speed.x > 0) {
-		if (enemy.position.x > screenWidth * 3 / 4) {
-			enemy.speed = { 0,0 };
-			counter++;
+
+		if (CheckCollisionPointRec(mouse, button.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player.speed.x == 0 && player.stamina >= 5) {
+			player.speed = { 5,0 };
+			player.attack = 10;
+			player.stamina -= 5;
 		}
-	}
-	enemy.position = Vector2Add(enemy.position, enemy.speed);
 
+		if (CheckCollisionPointRec(mouse, button1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player.speed.x == 0 && player.stamina >= 10) {
+			player.speed = { 5,0 };
+			player.attack = 15;
+			player.stamina -= 10;
+		}
+
+		if (CheckCollisionPointRec(mouse, button2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player.speed.x == 0 && player.stamina >= 30) {
+			player.speed = { 5,0 };
+			player.attack = 35;
+			player.stamina -= 30;
+		}
+		if (CheckCollisionPointRec(mouse, button3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player.speed.x == 0 && player.stamina >= 15) {
+			player.speed = { 5,0 };
+			enemy.attack = 0;
+			player.attack = 0;
+			enemy.stamina -= 25;
+			player.stamina -= 15;
+			player.stamina += 4;
+		}
+		if (CheckCollisionPointRec(mouse, button4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player.speed.x == 0 && player.stamina >= 20) {
+			player.speed = { 5,0 };
+			player.health += 20;
+			player.attack = 0;
+			player.stamina -= 20;
+		}
+
+		if (CheckCollisionRecs({ player.position.x,player.position.y,100,100 }, { enemy.position.x,enemy.position.y,100,100 }) && counter % 2 == 0) {
+			player.speed = { -5,0 };
+			enemy.health -= player.attack;
+		}
+		if (player.speed.x < 0) {
+			if (player.position.x < screenWidth / 4) {
+				player.speed = { 0,0 };
+				counter++;
+			}
+		}
+		player.position = Vector2Add(player.position, player.speed);
+
+		if (counter % 2 == 1 && enemy.speed.x == 0)
+			enemy.speed = { -5,0 };
+		if (CheckCollisionRecs({ enemy.position.x,enemy.position.y,100,100 }, { player.position.x,player.position.y,100,100 }) && counter % 2 == 1) {
+			enemy.speed = { 5,0 };
+			player.health -= GetRandomValue(enemy.attack-10,enemy.attack+10);
+		}
+		if (enemy.speed.x > 0) {
+			if (enemy.position.x > screenWidth * 3 / 4) {
+				enemy.speed = { 0,0 };
+				counter++;
+				player.stamina += 10;
+				enemy.attack = 10;
+				enemy.stamina = 100;
+			}
+		}
+		enemy.position = Vector2Add(enemy.position, enemy.speed);
+	}
 	// Отрисовка        
 	BeginDrawing();
 
@@ -282,10 +323,16 @@ void BattleScreen(LocationInfo info) {
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player);
 	DrawEnemy(enemy);
-	DrawRectangleRec(button.body, button.color);
-	DrawRectangleRec(button1.body, button1.color);
-	DrawRectangleRec(button2.body, button2.color);
-	DrawRectangleRec(button3.body, button3.color);
+	if (!game_over) {
+		DrawRectangleRec(button.body, button.color);
+		DrawRectangleRec(button1.body, button1.color);
+		DrawRectangleRec(button2.body, button2.color);
+		DrawRectangleRec(button3.body, button3.color);
+		DrawRectangleRec(button4.body, button4.color);
+	}
+	else {
+		DrawText("Game over", 100, 100, 50, BLACK);
+	}
 	EndDrawing();
 
 }
@@ -325,7 +372,6 @@ void InitializeGame() {
 	};
 	locations.push_back(location2);
 
-
 	image = LoadImage(Cave_filename);
 	texture = { 0 };
 	if (image.data != NULL)
@@ -343,8 +389,6 @@ void InitializeGame() {
 	};
 	locations.push_back(location3);
 
-
-
 	image = LoadImage(Castle_filename);
 	texture = { 0 };
 	if (image.data != NULL)
@@ -361,7 +405,6 @@ void InitializeGame() {
 			texture
 	};
 	locations.push_back(location4);
-
 
 	image = LoadImage(Village_filename);
 	texture = { 0 };
@@ -406,8 +449,11 @@ void InitializeGame() {
 
 	}
 	player_location = {
-		{ screenWidth / 2, screenHeight / 2 }, 100, 10,
-		texture ,
+		{ screenWidth / 2, screenHeight / 2 }, 
+		100, 
+		10,
+		0,
+		texture,
 		{0,0} };
 	if (image.data != NULL)
 	{
@@ -417,13 +463,23 @@ void InitializeGame() {
 
 	}
 	player = {
-	{ screenWidth / 2, screenHeight / 2 }, 100, 10,
+	    { screenWidth / 2, screenHeight / 2 }, 
+		100, 
+		10,
+		0,
 		texture ,
-		{0,0} };
+		{0,0} 
+	};
+
 	enemy = {
-		{ screenWidth / 2, screenHeight / 2 }, 100, 10,
-	texture, false,
-		{0,0} };
+		{ screenWidth / 2, screenHeight / 2 }, 
+		100, 
+		10,
+		100,
+		texture, 
+		false,
+		{0,0} 
+	};
 
 }
 
