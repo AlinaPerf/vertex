@@ -22,13 +22,22 @@ struct Enemy {
 	bool active;
 	Vector2 speed;
 };
+struct NPC {
+	Rectangle body;
+	Color color;
+};
+
+struct Shop{
+	Rectangle body;
+	Color color;
+};
 
 struct LocationInfo {
 	Rectangle bounds;
 	std::string name;
 	Color color;
 	int id;
-	Texture2D Texture{ 0 }; // Переменная для текстуры леса
+	Texture2D Texture{ 0 }; // Переменная для текстуры
 };
 
 struct Button {
@@ -77,7 +86,6 @@ void DrawLocations() {
 		std::string locationName = "Location" + (i + 1) + locations[i].name;
 		DrawText(locationName.c_str(), locations[i].bounds.x, locations[i].bounds.y, 10, BLACK);
 	}
-
 }
 
 /// <summary>
@@ -143,11 +151,21 @@ void LocationScreen(LocationInfo info) {
 	EndDrawing();
 }
 
+
+Rectangle npc_body = { 250,350,50,50 };
+NPC npc = {
+	npc_body,
+	BLUE,
+};
+
 void VillageScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
 	}
+	if (CheckCollisionPointRec({ player.position.x, player.position.y, npc.body }));
+
+
 	HandleInput();
 	// Отрисовка        
 	BeginDrawing();
@@ -155,6 +173,7 @@ void VillageScreen(LocationInfo info) {
 	ClearBackground(GRAY);
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player_location);
+	DrawRectangleRec(npc.body, npc.color);
 	EndDrawing();
 }
 
@@ -226,6 +245,7 @@ Button button2 = {
 	button2_body,
 	BLUE,
 };
+
 Rectangle button3_body = { 1490,650,100,50 };
 Button button3 = {
 	button3_body,
