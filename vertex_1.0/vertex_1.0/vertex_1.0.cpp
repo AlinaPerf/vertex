@@ -83,6 +83,12 @@ void DrawLocations() {
 		DrawText(locationName.c_str(), locations[i].bounds.x, locations[i].bounds.y, 10, BLACK);
 	}
 }
+//денюжки
+void DrawMonny() {
+	int money{};
+
+	DrawText(/*TextFormat("")*/money, 10, 20, 20, BLACK);
+};
 
 /// <summary>
 /// Обработка ввода для движения игрока
