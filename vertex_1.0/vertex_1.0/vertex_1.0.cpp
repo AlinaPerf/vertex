@@ -22,16 +22,14 @@ struct Enemy {
 	bool active;
 	Vector2 speed;
 };
-struct NPC {
+struct NPCButton {
 	Rectangle body;
 	Color color;
 };
-
-struct Shop{
+struct ShopButton {
 	Rectangle body;
 	Color color;
 };
-
 struct LocationInfo {
 	Rectangle bounds;
 	std::string name;
@@ -39,7 +37,6 @@ struct LocationInfo {
 	int id;
 	Texture2D Texture{ 0 }; // Переменная для текстуры
 };
-
 struct Button {
 	Rectangle body;
 	Color color;
@@ -59,7 +56,6 @@ const int screenWidth = 1600;
 const int screenHeight = 800;
 
 Image image = LoadImage(Wind_filename);
-
 
 Player player_location = { 0 };
 Player player = { 0 };
@@ -110,8 +106,6 @@ void HandleInput() {
 
 void LocationScreen(LocationInfo info) {
 	// Обработка ввода        
-
-
 	HandleInput();
 	// Проверка на столкновение с локациями
 	for (int i = 0; i < locations.size(); i++) {
@@ -127,7 +121,6 @@ void LocationScreen(LocationInfo info) {
 			}
 		}
 	}
-
 	// Логика игры (например, столкновения, бой и т.д.)
 	if (player_location.position.y < 0) {
 		player_location.position.y = 0;
@@ -150,23 +143,47 @@ void LocationScreen(LocationInfo info) {
 	DrawLocations(); // Отрисовка всех локаций
 	EndDrawing();
 }
-
-
 Rectangle npc_body = { 250,350,50,50 };
-NPC npc = {
+NPCButton npc = {
 	npc_body,
 	BLUE,
 };
+Rectangle shop_body = { 100,50,1400,700 };
+ShopButton shop = {
+	shop_body,
+	YELLOW,
+};
+Rectangle shopExit_body = { 150,75,25,25 };
+ShopButton shopExit = {
+	shopExit_body,
+	RED,
+};
+bool showDialog = false;
 
 void VillageScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
 	}
-	if (CheckCollisionPointRec({ player.position.x, player.position.y, npc.body }));
+	if (CheckCollisionPointRec({player_location.position.x,player_location.position.y }, { npc_body })) {
+		if (IsKeyPressed(KEY_ENTER)) {
+			std::cout << "shop";
 
-
-	HandleInput();
+			showDialog = true;
+		}
+	}
+	if(!showDialog){
+		HandleInput();
+	}
+	else {
+		//Обработка нажатия на кнопки в диалоговом окне
+		Vector2 mouse = GetMousePosition();
+		if (CheckCollisionPointRec(mouse, shopExit.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+			showDialog = false;
+		}
+			
+		
+	}
 	// Отрисовка        
 	BeginDrawing();
 	//DrawEnemy(enemy);
@@ -174,8 +191,13 @@ void VillageScreen(LocationInfo info) {
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player_location);
 	DrawRectangleRec(npc.body, npc.color);
+	if (showDialog) {
+		//Отрисовка диалогового окна
+		DrawRectangleRec(shop.body, shop.color);
+		DrawRectangleRec(shopExit.body, shopExit.color);
+	}
 	EndDrawing();
-}
+		}
 
 void ForestScreen(LocationInfo& info) {
 	if (IsKeyPressed(KEY_Q)) {
