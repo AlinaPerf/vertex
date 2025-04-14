@@ -3,6 +3,41 @@
 #include "raylib.h"
 #include "raymath.h"
 #include <vector>
+#include <string>
+#include <cstdlib>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <filesystem>
+
+const std::string base_directory = "money.txt";
+
+void getFileContents(const std::string& filename, std::string& fileContents) {
+	std::ifstream file(filename);
+	if (!file.is_open()) {
+		std::cerr << "Не удалось открыть файл: " << filename << std::endl;
+		std::ofstream create_file(filename);
+		create_file << "";
+		create_file.close();
+		std::cout << "Новый файл был успешно создан!";
+		return;
+	}
+	std::ostringstream oss;
+	oss << file.rdbuf();
+	fileContents = oss.str();
+	file.close();
+}
+
+void saveToFile(const std::string& filename, const std::string& newContent) {
+	std::ofstream file(filename);
+	if (!file.is_open()) {
+		std::cerr << "Не удалось открыть файл: " << filename << std::endl;
+		return;
+	}
+	file << newContent;
+	file.close();
+}
+
 
 
 struct Player {
@@ -83,11 +118,10 @@ void DrawLocations() {
 		DrawText(locationName.c_str(), locations[i].bounds.x, locations[i].bounds.y, 10, BLACK);
 	}
 }
+std::string money{};
 //денюжки
-void DrawMonny() {
-	int money{};
-
-	DrawText(/*TextFormat("")*/money, 10, 20, 20, BLACK);
+void DrawMoney() {
+	DrawText(/*TextFormat("")*/money.c_str(), 10, 20, 20, BLACK);
 };
 
 /// <summary>
@@ -147,6 +181,7 @@ void LocationScreen(LocationInfo info) {
 	DrawTexture(info.Texture, 0, 0, RAYWHITE);
 	DrawPlayer(player_location);
 	DrawLocations(); // Отрисовка всех локаций
+	DrawMoney();
 	EndDrawing();
 }
 Rectangle npc_body = { 250,350,50,50 };
@@ -534,12 +569,12 @@ void InitializeGame() {
 int main() {
 
 	InitWindow(screenWidth, screenHeight, "Game with Locations");
-
-
+	std::string content = "";
+	getFileContents(base_directory, content);
+	money = content;
 	// Создание игрока
 	SetTargetFPS(60); // Установка FPS
 	InitializeGame();
-
 
 
 	while (!WindowShouldClose()) {
