@@ -37,8 +37,45 @@ void saveToFile(const std::string& filename, const std::string& newContent) {
 	file << newContent;
 	file.close();
 }
+struct Bar {
+private:
+	const int margin = 5;
+	Rectangle bar_body;
+	Rectangle body;
+	float max_value;
+	float current_value;
+	Color background_color;
+	Color bar_color;
+	bool show_text;
+public:
+	void Draw() {
+		DrawRectangleRec(body, background_color);
+		DrawRectangleRec(bar_body, bar_color);
+		if (show_text) {
+			std::string value = (std::to_string(current_value) + "/" + std::to_string(max_value));
+			int fontSize = 14;
+			DrawText(value.c_str(), body.x + body.width / 2 - MeasureText(value.c_str(), fontSize) / 2, body.y + body.height / 4, fontSize, BLACK);
+		}
+	}
+	bool SetValue(float value) {
+		if (value < 0 || value > max_value) {
+			return false;
+		}
+		float percentage = value / max_value;
+		bar_body.width = body.width * percentage - 2 * margin;
+	}
+	Bar() {};
 
-
+	Bar(Rectangle body, float max_value, Color background_color, Color bar_color, bool show_text) :
+		body(body),
+		max_value(max_value),
+		background_color(background_color),
+		bar_color(bar_color),
+		show_text(show_text)
+	{
+		bar_body = { body.x + margin,body.y + margin,body.width - 2 * margin,body.height - 2 * margin };
+	};
+};
 
 struct Player {
 	Vector2 position;
@@ -47,6 +84,11 @@ struct Player {
 	int stamina;
 	Texture2D Body;
 	Vector2 speed;
+	Bar healthBar;
+
+	Player() {
+
+	}
 };
 struct Enemy {
 	Vector2 position;
@@ -57,6 +99,7 @@ struct Enemy {
 	bool active;
 	Vector2 speed;
 };
+
 struct NPCButton {
 	Rectangle body;
 	Color color;
@@ -102,6 +145,7 @@ void DrawPlayer(Player& player) {
 	DrawTexture(player.Body, player.position.x, player.position.y, RAYWHITE);
 	DrawText(TextFormat("HP: %d", player.health), player.position.x, player.position.y - 20, 20, RED);
 	DrawText(TextFormat("STAMINA: %d", player.stamina), player.position.x, player.position.y - 50, 20, RED);
+
 }
 
 void DrawEnemy(Enemy& enemy) {
@@ -231,6 +275,7 @@ void VillageScreen(LocationInfo info) {
 	ClearBackground(GRAY);
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player_location);
+	DrawMoney();
 	DrawRectangleRec(npc.body, npc.color);
 	if (showDialog) {
 		//Отрисовка диалогового окна
@@ -249,7 +294,7 @@ void ForestScreen(LocationInfo& info) {
 	// Отрисовка        
 	BeginDrawing();
 	ClearBackground(GREEN); // Фон для леса
-
+	DrawMoney();
 	// Отрисовка текстуры
 	DrawTexture(info.Texture, 0, 0, WHITE); // Отрисовка текстуры в верхнем левом углу
 
@@ -270,6 +315,7 @@ void CaveScreen(LocationInfo info) {
 	ClearBackground(BROWN);
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player_location);
+	DrawMoney();
 	EndDrawing();
 }
 
@@ -287,6 +333,7 @@ void CastleScreen(LocationInfo info) {
 	ClearBackground(BLUE);
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player_location);
+	DrawMoney();
 	EndDrawing();
 }
 
@@ -531,13 +578,16 @@ void InitializeGame() {
 		texture = LoadTextureFromImage(image);
 
 	}
+
 	player_location = {
 		{ screenWidth / 2, screenHeight / 2 }, 
 		100, 
 		10,
 		0,
 		texture,
-		{0,0} };
+		{0,0},
+				
+		 };
 	if (image.data != NULL)
 	{
 		ImageCrop(&image, { 51,133,41,58 });
@@ -551,7 +601,8 @@ void InitializeGame() {
 		10,
 		0,
 		texture ,
-		{0,0} 
+		{0,0} ,
+		{}
 	};
 
 	enemy = {
