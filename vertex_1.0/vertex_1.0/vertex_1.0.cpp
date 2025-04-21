@@ -86,9 +86,14 @@ struct Player {
 	Vector2 speed;
 	Bar healthBar;
 
-	Player() {
+	Player(int health,	int attack,	int stamina,	Texture2D Body,	Vector2 speed) : 
+		health(health),
+		attack(attack),
+		stamina(stamina),
+		Body(Body),
+		speed(speed)
 
-	}
+	{}
 };
 struct Enemy {
 	Vector2 position;
@@ -596,8 +601,8 @@ void InitializeGame() {
 
 	}
 	player = {
-	    { screenWidth / 2, screenHeight / 2 }, 
-		100, 
+		{ screenWidth / 2, screenHeight / 2 },
+		100,
 		10,
 		0,
 		texture ,
