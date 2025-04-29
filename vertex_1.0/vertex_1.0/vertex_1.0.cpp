@@ -445,9 +445,12 @@ void BattleScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
-		player->health = 100;
-		enemy->health = 100;
+		player->SetHealth(100);
 		player->SetStamina(0);
+
+		enemy->SetHealth(100);
+		enemy->SetStamina(0);
+
 		game_over = false;
 	}
 	if (!game_over)
@@ -462,18 +465,22 @@ void BattleScreen(LocationInfo info) {
 			player->speed = { 5,0 };
 			player->attack = 10;
 			player->SetStamina(player->stamina - 5);
+			enemy->SetHealth(enemy->health - 10);
+			
 		}
 
 		if (CheckCollisionPointRec(mouse, button1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player->speed.x == 0 && player->stamina >= 10) {
 			player->speed = { 5,0 };
 			player->attack = 15;
 			player->SetStamina(player->stamina - 10);
+			enemy->SetHealth(enemy->health - 15);
 		}
 
 		if (CheckCollisionPointRec(mouse, button2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player->speed.x == 0 && player->stamina >= 30) {
 			player->speed = { 5,0 };
 			player->attack = 35;
 			player->SetStamina(player->stamina - 30);
+			enemy->SetHealth(enemy->health - 35);
 		}
 		if (CheckCollisionPointRec(mouse, button3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player->speed.x == 0 && player->stamina >= 15) {
 			player->speed = { 5,0 };
@@ -481,10 +488,11 @@ void BattleScreen(LocationInfo info) {
 			player->attack = 0;
 			enemy->SetStamina(enemy->stamina - 25);
 			player->SetStamina(player->stamina - 11);
+			
 		}
 		if (CheckCollisionPointRec(mouse, button4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player->speed.x == 0 && player->stamina >= 20) {
 			player->speed = { 5,0 };
-			player->health += 20;
+			player->SetHealth(player->health +20);
 			player->attack = 0;
 			player->SetStamina(player->stamina - 20);
 		}
@@ -513,7 +521,8 @@ void BattleScreen(LocationInfo info) {
 				counter++;
 				player->SetStamina(player->stamina + 10);
 				enemy->attack = 10;
-				enemy->stamina = 100;
+				enemy->SetStamina(enemy->stamina + 10);
+			/*	enemy->stamina = 100;*/
 			}
 		}
 		enemy->position = Vector2Add(enemy->position, enemy->speed);
