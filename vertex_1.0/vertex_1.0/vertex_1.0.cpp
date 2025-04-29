@@ -481,7 +481,7 @@ void BattleScreen(LocationInfo info) {
 			player->attack = 35;
 			player->SetStamina(player->stamina - 30);
 			enemy->SetHealth(enemy->health - 35);
-		}
+		}                                                 
 		if (CheckCollisionPointRec(mouse, button3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player->speed.x == 0 && player->stamina >= 15) {
 			player->speed = { 5,0 };
 			enemy->attack = 0;
@@ -508,6 +508,7 @@ void BattleScreen(LocationInfo info) {
 			}
 		}
 		player->SetPosition(Vector2Add(player->position, player->speed));
+	/*	enemy->SetPosition(Vector2Add(enemy->position, enemy->speed));*/
 
 		if (counter % 2 == 1 && enemy->speed.x == 0)
 			enemy->speed = { -5,0 };
