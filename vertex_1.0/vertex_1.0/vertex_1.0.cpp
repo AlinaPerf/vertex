@@ -66,6 +66,9 @@ public:
 		this->current_value = value;
 		this->bar_body.width = body.width * percentage - 2 * margin;
 	}
+	void SetMaxValue(int value) {
+		this->max_value = value;
+	}
 	void setPosition(Vector2 next) {
 		this->body.x = next.x;
 		this->body.y = next.y;
@@ -93,23 +96,29 @@ public:
 struct Player {
 	Vector2 position;
 	int body_size;
-	int health;
-	int attack;
-	int stamina;
+	int current_health;
+	int health_bonus=0;
+	int current_attack;
+	int attack_bonus=0;
+	int max_stamina;
+	int current_stamina;
+	int stamina_bonus=0;
+	int regen_bonus=0;
 	Texture2D Body;
 	Vector2 speed;
 	Bar healthBar;
 	Bar staminaBar;
+	bool showBars=false;
 
-	Player(Vector2 position,int health,	int attack,	int stamina, int body_size, Texture2D body,Vector2 speed) : 
+	Player(Vector2 position,float health,float attack,float stamina, int body_size, Texture2D body,Vector2 speed) : 
 		position(position),
-		health(health),
-		attack(attack),
-		stamina(stamina),
+		current_health(health),
+		current_attack(attack),
+		max_stamina(stamina),
 		Body(body),
 		speed(speed),
-		healthBar({ position.x,position.y - 80,100,30 }, health, BLACK, GREEN,WHITE, true),
-		staminaBar({ position.x,position.y - 40,100,30 }, health, BLACK, BLUE, WHITE, true),
+		healthBar({ position.x,position.y - 80,health,30 }, health, BLACK, GREEN,WHITE, true),
+		staminaBar({ position.x,position.y - 40,100,30 }, health , BLACK, BLUE, WHITE, true),
 		body_size(body_size)
 	{}
 
@@ -119,11 +128,16 @@ struct Player {
 		this->staminaBar.setPosition({next.x,next.y-40});
 	}
 	void SetHealth(int next) {
-		this->health = next;
+		this->current_health = next;
 		this->healthBar.SetValue(next);
-	}	
+	}
+	void SetMaxHealth(int next) {
+		this->current_health = next;
+		this->healthBar.SetMaxValue(next);
+		this->healthBar.SetValue(next);
+	}
 	void SetStamina(int next) {
-		this->stamina = next;
+		this->current_stamina = next;
 		this->staminaBar.SetValue(next);
 	}
 };
@@ -173,6 +187,10 @@ struct NPCButton {
 	Rectangle body;
 	Color color;
 };
+struct NPCChest {
+	Rectangle body;
+	Color color;
+};
 struct ShopButton {
 	Rectangle body;
 	Color color;
@@ -212,8 +230,10 @@ int currentLocation = 0;
 void DrawPlayer(Player* player) {
 	//DrawRectangle(player->position.x, player->position.y, player->body_size, player->body_size, BLACK);
 	DrawTexture(player->Body, player->position.x, player->position.y, RAYWHITE);
-	player->healthBar.Draw();
-	player->staminaBar.Draw();
+	if (player->showBars) {
+		player->healthBar.Draw();
+		player->staminaBar.Draw();
+	}
 	/*DrawText(TextFormat("HP: %d", player->health), player->position.x, player->position.y - 20, 20, RED);
 	DrawText(TextFormat("STAMINA: %d", player->stamina), player->position.x, player->position.y - 50, 20, RED);*/
 
@@ -261,6 +281,7 @@ void HandleInput() {
 	}
 }
 
+int battle_turn_counter = 0;
 void LocationScreen(LocationInfo info) {
 	// Обработка ввода        
 	HandleInput();
@@ -271,10 +292,13 @@ void LocationScreen(LocationInfo info) {
 				currentLocation = locations[i].id;
 				player->SetPosition({ screenWidth / 4,screenHeight / 2 });
 				player->SetStamina(10);
+				player->showBars = true;
 				enemy->SetPosition({ screenWidth * 3 / 4,screenHeight / 2 });
+				enemy->SetStamina(10);
 				// Открытие нового окна для информации о локации
 				DrawText(locations[i].name.c_str(), screenWidth / 2 - MeasureText(locations[i].name.c_str(), 20) / 2, screenHeight / 2, 20, BLACK);
 				DrawText("Press ESC to return", screenWidth / 2 - MeasureText("Press ESC to return", 20) / 2, screenHeight / 2 + 30, 20, BLACK);
+				battle_turn_counter= 0;
 			}
 		}
 	}
@@ -301,6 +325,13 @@ void LocationScreen(LocationInfo info) {
 	DrawMoney();
 	EndDrawing();
 }
+Rectangle chest_body = { 1050,550,30,30 };
+NPCChest chest = {
+	chest_body,
+	VIOLET,
+};
+
+
 Rectangle npc_body = { 250,350,50,50 };
 NPCButton npc = {
 	npc_body,
@@ -315,6 +346,26 @@ Rectangle shopExit_body = { 150,75,25,25 };
 ShopButton shopExit = {
 	shopExit_body,
 	RED,
+};
+Rectangle shopBonus1_body = { 150,175,200,200 };
+ShopButton shopBonus1 = {
+	shopBonus1_body,
+	VIOLET,
+};
+Rectangle shopBonus2_body = { 450,175,200,200 };
+ShopButton shopBonus2 = {
+	shopBonus2_body,
+	GREEN,
+};
+Rectangle shopBonus3_body = { 750,175,200,200 };
+ShopButton shopBonus3 = {
+	shopBonus3_body,
+	GRAY,
+};
+Rectangle shopBonus4_body = { 1050,175,200,200 };
+ShopButton shopBonus4 = {
+	shopBonus4_body,
+	BLUE,
 };
 bool showDialog = false;
 
@@ -339,8 +390,23 @@ void VillageScreen(LocationInfo info) {
 		if (CheckCollisionPointRec(mouse, shopExit.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
 			showDialog = false;
 		}
-			
-		
+		else if (CheckCollisionPointRec(mouse, shopBonus1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+			player->attack_bonus += 1;
+		}
+		else if (CheckCollisionPointRec(mouse, shopBonus2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+			player->SetMaxHealth(player->current_health + 100);
+		}
+		else if (CheckCollisionPointRec(mouse, shopBonus3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+			player->stamina_bonus += 100;
+		}
+		else if (CheckCollisionPointRec(mouse, shopBonus4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+			player->regen_bonus += 1;
+		}
+	}
+	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { chest_body })) {
+		if (IsKeyPressed(KEY_ENTER)) {
+			money = std::to_string(std::stoi(money) + 10);
+		}
 	}
 	// Отрисовка        
 	BeginDrawing();
@@ -350,10 +416,15 @@ void VillageScreen(LocationInfo info) {
 	DrawPlayer(player_location);
 	DrawMoney();
 	DrawRectangleRec(npc.body, npc.color);
+	DrawRectangleRec(chest.body, chest.color);
 	if (showDialog) {
 		//Отрисовка диалогового окна
 		DrawRectangleRec(shop.body, shop.color);
 		DrawRectangleRec(shopExit.body, shopExit.color);
+		DrawRectangleRec(shopBonus1.body, shopBonus1.color);
+		DrawRectangleRec(shopBonus2.body, shopBonus2.color);
+		DrawRectangleRec(shopBonus3.body, shopBonus3.color);
+		DrawRectangleRec(shopBonus4.body, shopBonus4.color);
 	}
 	EndDrawing();
 		}
@@ -410,7 +481,6 @@ void CastleScreen(LocationInfo info) {
 	EndDrawing();
 }
 
-int counter = 0;
 Rectangle button_body = { 10,650,100,50 };
 Button button = {
 	button_body,
@@ -441,92 +511,96 @@ Button button4 = {
 };
 
 bool game_over = false;
+//void BattleScreen(LocationInfo info,Enemy* enemy) {
 void BattleScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
 		player->SetHealth(100);
 		player->SetStamina(0);
+		player->showBars = false;
+		player->speed = { 0,0 };
+		player->position.x = screenWidth * 1 / 4;
 
 		enemy->SetHealth(100);
 		enemy->SetStamina(0);
+		enemy->speed = { 0,0 };
+		enemy->position.x = screenWidth * 3 / 4;
 
 		game_over = false;
+		battle_turn_counter = 0;
 	}
 	if (!game_over)
 	{
-		if (player->health <= 0 or enemy->health <= 0) {
+		if (player->current_health <= 0 or enemy->health <= 0) {
 			game_over = true;
+			money = std::to_string(std::stoi(money) + 15);
 		}
 		Vector2 mouse = GetMousePosition();
 
 
-		if (CheckCollisionPointRec(mouse, button.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player->speed.x == 0 && player->stamina >= 5) {
-			player->speed = { 5,0 };
-			player->attack = 10;
-			player->SetStamina(player->stamina - 5);
-			enemy->SetHealth(enemy->health - 10);
-			
+		if (CheckCollisionPointRec(mouse, button.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 5) {
+			player->speed = { 30,0 };
+			player->current_attack = 10;
+			player->SetStamina(player->current_stamina - 5);		
 		}
 
-		if (CheckCollisionPointRec(mouse, button1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player->speed.x == 0 && player->stamina >= 10) {
-			player->speed = { 5,0 };
-			player->attack = 15;
-			player->SetStamina(player->stamina - 10);
-			enemy->SetHealth(enemy->health - 15);
+		if (CheckCollisionPointRec(mouse, button1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 10) {
+			player->speed = { 30,0 };
+			player->current_attack = 15;
+			player->SetStamina(player->current_stamina - 10);
 		}
 
-		if (CheckCollisionPointRec(mouse, button2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player->speed.x == 0 && player->stamina >= 30) {
-			player->speed = { 5,0 };
-			player->attack = 35;
-			player->SetStamina(player->stamina - 30);
-			enemy->SetHealth(enemy->health - 35);
+		if (CheckCollisionPointRec(mouse, button2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 30) {
+			player->speed = { 30,0 };
+			player->current_attack = 35;
+			player->SetStamina(player->current_stamina - 30);
 		}                                                 
-		if (CheckCollisionPointRec(mouse, button3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player->speed.x == 0 && player->stamina >= 15) {
-			player->speed = { 5,0 };
+		if (CheckCollisionPointRec(mouse, button3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 15) {
+			player->speed = { 30,0 };
 			enemy->attack = 0;
-			player->attack = 0;
+			player->current_attack = 0;
 			enemy->SetStamina(enemy->stamina - 25);
-			player->SetStamina(player->stamina - 11);
+			player->SetStamina(player->current_stamina - 11);
 			
 		}
-		if (CheckCollisionPointRec(mouse, button4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && counter % 2 == 0 && player->speed.x == 0 && player->stamina >= 20) {
-			player->speed = { 5,0 };
-			player->SetHealth(player->health +20);
-			player->attack = 0;
-			player->SetStamina(player->stamina - 20);
+		if (CheckCollisionPointRec(mouse, button4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 20) {
+			player->speed = { 30,0 };
+			player->SetHealth(player->current_health +20 + player->regen_bonus);
+			player->current_attack = 0;
+			player->SetStamina(player->current_stamina - 20);
 		}
 
-		if (CheckCollisionRecs({ player->position.x,player->position.y,100,100 }, { enemy->position.x,enemy->position.y,100,100 }) && counter % 2 == 0) {
-			player->speed = { -5,0 };
-			enemy->health -= player->attack;
+		if (CheckCollisionRecs({ player->position.x,player->position.y,100,100 }, { enemy->position.x,enemy->position.y,100,100 }) && battle_turn_counter % 2 == 0) {
+			player->speed = { -30,0 };
+			enemy->SetHealth(enemy->health - player->current_attack - player->attack_bonus);
 		}
 		if (player->speed.x < 0) {
 			if (player->position.x < screenWidth / 4) {
 				player->speed = { 0,0 };
-				counter++;
+				battle_turn_counter++;
 			}
 		}
 		player->SetPosition(Vector2Add(player->position, player->speed));
-	/*	enemy->SetPosition(Vector2Add(enemy->position, enemy->speed));*/
 
-		if (counter % 2 == 1 && enemy->speed.x == 0)
-			enemy->speed = { -5,0 };
-		if (CheckCollisionRecs({ enemy->position.x,enemy->position.y,100,100 }, { player->position.x,player->position.y,100,100 }) && counter % 2 == 1) {
-			enemy->speed = { 5,0 };
-			player->SetHealth(player->health - GetRandomValue(enemy->attack-10,enemy->attack+10));
+		if (battle_turn_counter % 2 == 1 && enemy->speed.x == 0)
+			enemy->speed = { -30,0 };
+		if (CheckCollisionRecs({ enemy->position.x,enemy->position.y,100,100 }, { player->position.x,player->position.y,100,100 }) && battle_turn_counter % 2 == 1) {
+			enemy->speed = { 30,0 };
+			player->SetHealth(player->current_health - GetRandomValue(enemy->attack-10,enemy->attack+10));
 		}
 		if (enemy->speed.x > 0) {
 			if (enemy->position.x > screenWidth * 3 / 4) {
 				enemy->speed = { 0,0 };
-				counter++;
-				player->SetStamina(player->stamina + 10);
+				battle_turn_counter++;
+				int stamina_regen = player->current_stamina + 10 + player->stamina_bonus;
+				player->SetStamina(stamina_regen>player->max_stamina?player->max_stamina:stamina_regen);
 				enemy->attack = 10;
 				enemy->SetStamina(enemy->stamina + 10);
 			/*	enemy->stamina = 100;*/
 			}
 		}
-		enemy->position = Vector2Add(enemy->position, enemy->speed);
+		enemy->SetPosition(Vector2Add(enemy->position, enemy->speed));
 	}
 	// Отрисовка        
 	BeginDrawing();
@@ -681,7 +755,7 @@ void InitializeGame() {
 		{ screenWidth / 2, screenHeight / 2 },
 		100,
 		10,
-		0,
+		100,
 		100,
 		texture ,
 		{0,0} 
@@ -690,7 +764,7 @@ void InitializeGame() {
 		{ screenWidth / 2, screenHeight / 2 }, 
 		100, 
 		10,
-		100,
+		0,
 		100,
 		texture, 
 		{0,0} 
@@ -737,7 +811,6 @@ int main() {
 		//LocationScreen();
 		//BattleScreen();
 	}
-
 
 	// Закрытие окна
 	CloseWindow();
