@@ -69,6 +69,9 @@ public:
 	void SetMaxValue(int value) {
 		this->max_value = value;
 	}
+	int GetMaxValue() {
+		return this->max_value;
+	}
 	void setPosition(Vector2 next) {
 		this->body.x = next.x;
 		this->body.y = next.y;
@@ -207,6 +210,11 @@ struct Button {
 	Color color;
 };
 
+struct ButtonBattle {
+	Rectangle body;
+	Color color;
+};
+
 
 const char* Wind_filename = "./Assets/Locations/wind.png";
 const char* Castle_filename = "./Assets/Locations/castle.png";
@@ -224,7 +232,12 @@ Image image = LoadImage(Wind_filename);
 
 Player* player_location;
 Player* player;
-Enemy* enemy;
+
+//Enemy* enemy;
+//Enemy* enemy1;
+//Enemy* enemy2;
+std::vector<Enemy*> enemies;
+Enemy* currentEnemy;
 std::vector<LocationInfo> locations;
 int currentLocation = 0;
 void DrawPlayer(Player* player) {
@@ -293,8 +306,10 @@ void LocationScreen(LocationInfo info) {
 				player->SetPosition({ screenWidth / 4,screenHeight / 2 });
 				player->SetStamina(10);
 				player->showBars = true;
-				enemy->SetPosition({ screenWidth * 3 / 4,screenHeight / 2 });
-				enemy->SetStamina(10);
+				currentEnemy = enemies[GetRandomValue(0, 2)];
+
+				currentEnemy->SetPosition({ screenWidth * 3 / 4,screenHeight / 2 });
+				currentEnemy->SetStamina(10);
 				// Открытие нового окна для информации о локации
 				DrawText(locations[i].name.c_str(), screenWidth / 2 - MeasureText(locations[i].name.c_str(), 20) / 2, screenHeight / 2, 20, BLACK);
 				DrawText("Press ESC to return", screenWidth / 2 - MeasureText("Press ESC to return", 20) / 2, screenHeight / 2 + 30, 20, BLACK);
@@ -330,6 +345,32 @@ NPCChest chest = {
 	chest_body,
 	VIOLET,
 };
+Rectangle chest1_body = { 550,350,30,30 };
+NPCChest chest1 = {
+	chest1_body,
+	VIOLET,
+};
+Rectangle chest2_body = { 850,400,30,30 };
+NPCChest chest2 = {
+	chest2_body,
+	VIOLET,
+};
+
+Rectangle ButtonBattle_body = { 1050,550,100,100 };
+NPCChest ButtonBattle = {
+	ButtonBattle_body,
+	RED,
+};
+//Rectangle ButtonBattle1_body = { 1050,550,100,100 };
+//NPCChest ButtonBattle1 = {
+//	ButtonBattle1_body,
+//	RED,
+//};
+//Rectangle ButtonBattle2_body = { 1050,550,100,100 };
+//NPCChest ButtonBattle2 = {
+//	ButtonBattle2_body,
+//	RED,
+//};
 
 
 Rectangle npc_body = { 250,350,50,50 };
@@ -429,16 +470,37 @@ void VillageScreen(LocationInfo info) {
 	EndDrawing();
 		}
 
+
 void ForestScreen(LocationInfo& info) {
 	if (IsKeyPressed(KEY_Q)) {
 		currentLocation = 0; // Возврат в основное меню
 	}
+	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { chest_body })) {
+		if (IsKeyPressed(KEY_ENTER)) {
+			money = std::to_string(std::stoi(money) + 100);
+		}
+	}
 
+	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { ButtonBattle_body })) {
+		if (IsKeyPressed(KEY_ENTER)) {
+			currentLocation = 5;
+			currentEnemy = enemies[GetRandomValue(0,2)];
+
+			player->SetPosition({ screenWidth / 4,screenHeight / 2 });
+			player->SetStamina(10);
+			player->showBars = true;
+			currentEnemy->SetPosition({ screenWidth * 3 / 4,screenHeight / 2 });
+			currentEnemy->SetStamina(10);
+			return;
+		}
+	}
 	HandleInput();
 	// Отрисовка        
 	BeginDrawing();
 	ClearBackground(GREEN); // Фон для леса
 	DrawMoney();
+	DrawRectangleRec(chest.body, chest.color);
+	DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
 	// Отрисовка текстуры
 	DrawTexture(info.Texture, 0, 0, WHITE); // Отрисовка текстуры в верхнем левом углу
 
@@ -451,6 +513,26 @@ void CaveScreen(LocationInfo info) {
 	{
 		currentLocation = 0;
 	}
+	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { chest1_body })) {
+		if (IsKeyPressed(KEY_ENTER)) {
+			money = std::to_string(std::stoi(money) + 1000);
+		}
+	}
+
+	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { ButtonBattle_body })) {
+		if (IsKeyPressed(KEY_ENTER)) {
+
+			currentLocation = 5;
+			currentEnemy = enemies[GetRandomValue(0, 2)];
+			player->SetPosition({ screenWidth / 4,screenHeight / 2 });
+			player->SetStamina(10);
+			player->showBars = true;
+			currentEnemy->SetPosition({ screenWidth * 3 / 4,screenHeight / 2 });
+			currentEnemy->SetStamina(10);
+			return;
+		}
+	}
+
 
 	HandleInput();
 	// Отрисовка        
@@ -460,6 +542,8 @@ void CaveScreen(LocationInfo info) {
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player_location);
 	DrawMoney();
+	DrawRectangleRec(chest1.body, chest1.color);
+	DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
 	EndDrawing();
 }
 
@@ -467,6 +551,25 @@ void CastleScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
+	}
+
+	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { chest2_body })) {
+		if (IsKeyPressed(KEY_ENTER)) {
+			money = std::to_string(std::stoi(money) + 1);
+		}
+	}
+	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { ButtonBattle_body })) {
+		if (IsKeyPressed(KEY_ENTER)) {
+
+			currentLocation = 5;
+			currentEnemy = enemies[GetRandomValue(0, 2)];
+			player->SetPosition({ screenWidth / 4,screenHeight / 2 });
+			player->SetStamina(10);
+			player->showBars = true;
+			currentEnemy->SetPosition({ screenWidth * 3 / 4,screenHeight / 2 });
+			currentEnemy->SetStamina(10);
+			return;
+		}
 	}
 
 	HandleInput();
@@ -478,8 +581,11 @@ void CastleScreen(LocationInfo info) {
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player_location);
 	DrawMoney();
+	DrawRectangleRec(chest2.body, chest2.color);
+	DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
 	EndDrawing();
 }
+
 
 Rectangle button_body = { 10,650,100,50 };
 Button button = {
@@ -511,7 +617,7 @@ Button button4 = {
 };
 
 bool game_over = false;
-//void BattleScreen(LocationInfo info,Enemy* enemy) {
+
 void BattleScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
@@ -522,17 +628,17 @@ void BattleScreen(LocationInfo info) {
 		player->speed = { 0,0 };
 		player->position.x = screenWidth * 1 / 4;
 
-		enemy->SetHealth(100);
-		enemy->SetStamina(0);
-		enemy->speed = { 0,0 };
-		enemy->position.x = screenWidth * 3 / 4;
+		currentEnemy->SetHealth(currentEnemy->healthBar.GetMaxValue());
+		currentEnemy->SetStamina(0);
+		currentEnemy->speed = { 0,0 };
+		currentEnemy->position.x = screenWidth * 3 / 4;
 
 		game_over = false;
 		battle_turn_counter = 0;
 	}
 	if (!game_over)
 	{
-		if (player->current_health <= 0 or enemy->health <= 0) {
+		if (player->current_health <= 0 or currentEnemy->health <= 0) {
 			game_over = true;
 			money = std::to_string(std::stoi(money) + 15);
 		}
@@ -558,9 +664,9 @@ void BattleScreen(LocationInfo info) {
 		}                                                 
 		if (CheckCollisionPointRec(mouse, button3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 15) {
 			player->speed = { 30,0 };
-			enemy->attack = 0;
+			currentEnemy->attack = 0;
 			player->current_attack = 0;
-			enemy->SetStamina(enemy->stamina - 25);
+			currentEnemy->SetStamina(currentEnemy->stamina - 25);
 			player->SetStamina(player->current_stamina - 11);
 			
 		}
@@ -571,9 +677,9 @@ void BattleScreen(LocationInfo info) {
 			player->SetStamina(player->current_stamina - 20);
 		}
 
-		if (CheckCollisionRecs({ player->position.x,player->position.y,100,100 }, { enemy->position.x,enemy->position.y,100,100 }) && battle_turn_counter % 2 == 0) {
+		if (CheckCollisionRecs({ player->position.x,player->position.y,100,100 }, { currentEnemy->position.x,currentEnemy->position.y,100,100 }) && battle_turn_counter % 2 == 0) {
 			player->speed = { -30,0 };
-			enemy->SetHealth(enemy->health - player->current_attack - player->attack_bonus);
+			currentEnemy->SetHealth(currentEnemy->health - player->current_attack - player->attack_bonus);
 		}
 		if (player->speed.x < 0) {
 			if (player->position.x < screenWidth / 4) {
@@ -583,24 +689,24 @@ void BattleScreen(LocationInfo info) {
 		}
 		player->SetPosition(Vector2Add(player->position, player->speed));
 
-		if (battle_turn_counter % 2 == 1 && enemy->speed.x == 0)
-			enemy->speed = { -30,0 };
-		if (CheckCollisionRecs({ enemy->position.x,enemy->position.y,100,100 }, { player->position.x,player->position.y,100,100 }) && battle_turn_counter % 2 == 1) {
-			enemy->speed = { 30,0 };
-			player->SetHealth(player->current_health - GetRandomValue(enemy->attack-10,enemy->attack+10));
+		if (battle_turn_counter % 2 == 1 && currentEnemy->speed.x == 0)
+			currentEnemy->speed = { -30,0 };
+		if (CheckCollisionRecs({ currentEnemy->position.x,currentEnemy->position.y,100,100 }, { player->position.x,player->position.y,100,100 }) && battle_turn_counter % 2 == 1) {
+			currentEnemy->speed = { 30,0 };
+			player->SetHealth(player->current_health - GetRandomValue(currentEnemy->attack-10,currentEnemy->attack+10));
 		}
-		if (enemy->speed.x > 0) {
-			if (enemy->position.x > screenWidth * 3 / 4) {
-				enemy->speed = { 0,0 };
+		if (currentEnemy->speed.x > 0) {
+			if (currentEnemy->position.x > screenWidth * 3 / 4) {
+				currentEnemy->speed = { 0,0 };
 				battle_turn_counter++;
 				int stamina_regen = player->current_stamina + 10 + player->stamina_bonus;
 				player->SetStamina(stamina_regen>player->max_stamina?player->max_stamina:stamina_regen);
-				enemy->attack = 10;
-				enemy->SetStamina(enemy->stamina + 10);
-			/*	enemy->stamina = 100;*/
+				currentEnemy->attack = 10;
+				currentEnemy->SetStamina(currentEnemy->stamina + 10);
+			/*	currentEnemy->stamina = 100;*/
 			}
 		}
-		enemy->SetPosition(Vector2Add(enemy->position, enemy->speed));
+		currentEnemy->SetPosition(Vector2Add(currentEnemy->position, currentEnemy->speed));
 	}
 	// Отрисовка        
 	BeginDrawing();
@@ -608,7 +714,7 @@ void BattleScreen(LocationInfo info) {
 	ClearBackground(RAYWHITE);
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawPlayer(player);
-	DrawEnemy(enemy);
+	DrawEnemy(currentEnemy);
 	if (!game_over) {
 		DrawRectangleRec(button.body, button.color);
 		DrawRectangleRec(button1.body, button1.color);
@@ -760,15 +866,37 @@ void InitializeGame() {
 		texture ,
 		{0,0} 
 	};
-	enemy = new Enemy{
+
+	Enemy* enemy = new Enemy{
 		{ screenWidth / 2, screenHeight / 2 }, 
 		100, 
 		10,
 		0,
-		100,
+		10,
 		texture, 
 		{0,0} 
 	};
+	enemies.push_back(enemy);
+	enemy = new Enemy{
+		{ screenWidth / 2, screenHeight / 2 },
+		200,
+		15,
+		0,
+		100,
+		texture,
+		{0,0}
+	};
+	enemies.push_back(enemy);
+	enemy = new Enemy{
+		{ screenWidth / 2, screenHeight / 2 },
+		1000,
+		50,
+		0,
+		500,
+		texture,
+		{0,0}
+	};
+	enemies.push_back(enemy);
 
 }
 
