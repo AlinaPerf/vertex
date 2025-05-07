@@ -338,6 +338,12 @@ void LocationScreen(LocationInfo info) {
 	DrawPlayer(player_location);
 	DrawLocations(); // Отрисовка всех локаций
 	DrawMoney();
+
+	DrawText(TextFormat("Welcome"), screenWidth/4, screenHeight/3, 50, WHITE);
+	DrawText(TextFormat("Click A, W, S, D to move around"), screenWidth / 4, screenHeight / 3 + 60, 50, WHITE);
+	DrawText(TextFormat("Click Enter to enter a location"), screenWidth / 4, screenHeight / 3 + 120, 50, WHITE);
+	DrawText(TextFormat("Click Q to exit a location"), screenWidth / 4, screenHeight / 3 + 180, 50, WHITE);
+
 	EndDrawing();
 }
 Rectangle chest_body = { 1050,550,30,30 };
