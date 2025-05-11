@@ -330,7 +330,7 @@ void LocationScreen(LocationInfo info) {
 	if (player_location->position.y + 50 > screenHeight) {
 		player_location->position.y = screenHeight - 50;
 	}
-
+	
 	// Отрисовка        
 	BeginDrawing();
 	ClearBackground(RAYWHITE);
@@ -339,10 +339,11 @@ void LocationScreen(LocationInfo info) {
 	DrawLocations(); // Отрисовка всех локаций
 	DrawMoney();
 
-	DrawText(TextFormat("Welcome"), screenWidth/4, screenHeight/3, 50, WHITE);
-	DrawText(TextFormat("Click A, W, S, D to move around"), screenWidth / 4, screenHeight / 3 + 60, 50, WHITE);
-	DrawText(TextFormat("Click Enter to enter a location"), screenWidth / 4, screenHeight / 3 + 120, 50, WHITE);
-	DrawText(TextFormat("Click Q to exit a location"), screenWidth / 4, screenHeight / 3 + 180, 50, WHITE);
+	DrawText(TextFormat("Welcome"), 3*screenWidth/4, 3*screenHeight/4, 25, WHITE);
+	DrawText(TextFormat("Click W, A, S, D to move around"), 3*screenWidth / 4,3*screenHeight / 4 + 30, 25, WHITE);
+	DrawText(TextFormat("Click Enter to enter a location"), 3*screenWidth / 4, 3*screenHeight / 4 + 55, 25, WHITE);
+	DrawText(TextFormat("Click Q to exit a location"), 3*screenWidth / 4, 3*screenHeight / 4 + 80, 25, WHITE);
+
 
 	EndDrawing();
 }
@@ -512,7 +513,7 @@ void ForestScreen(LocationInfo& info) {
 			return;
 		}
 	}
-	HandleInput();
+	HandleInput(); 
 	// Отрисовка        
 	BeginDrawing();
 	ClearBackground(GREEN); // Фон для леса
