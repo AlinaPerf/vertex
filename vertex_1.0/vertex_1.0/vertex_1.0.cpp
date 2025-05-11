@@ -368,16 +368,6 @@ NPCChest ButtonBattle = {
 	ButtonBattle_body,
 	RED,
 };
-//Rectangle ButtonBattle1_body = { 1050,550,100,100 };
-//NPCChest ButtonBattle1 = {
-//	ButtonBattle1_body,
-//	RED,
-//};
-//Rectangle ButtonBattle2_body = { 1050,550,100,100 };
-//NPCChest ButtonBattle2 = {
-//	ButtonBattle2_body,
-//	RED,
-//};
 
 
 Rectangle npc_body = { 250,350,50,50 };
