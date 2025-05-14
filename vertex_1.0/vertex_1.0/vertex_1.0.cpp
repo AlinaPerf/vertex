@@ -37,6 +37,7 @@ void saveToFile(const std::string& filename, const std::string& newContent) {
 	file << newContent;
 	file.close();
 }
+
 struct Bar {
 private:
 	const int margin = 5;
