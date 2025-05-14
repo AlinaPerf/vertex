@@ -99,6 +99,7 @@ public:
 struct Player {
 	Vector2 position;
 	int body_size;
+	int max_health;
 	int current_health;
 	int health_bonus = 0;
 	int current_attack;
@@ -116,6 +117,7 @@ struct Player {
 	Player(Vector2 position, float health, float attack, float stamina, int body_size, Texture2D body, Vector2 speed) :
 		position(position),
 		current_health(health),
+		max_health(health),
 		current_attack(attack),
 		max_stamina(stamina),
 		Body(body),
@@ -136,6 +138,7 @@ struct Player {
 	}
 	void SetMaxHealth(int next) {
 		this->current_health = next;
+		this->max_health = next;
 		this->healthBar.SetMaxValue(next);
 		this->healthBar.SetValue(next);
 	}
@@ -264,8 +267,8 @@ void DrawLocations() {
 	for (int i = 1; i < locations.size(); i++)
 	{
 		DrawRectangleRec(locations[i].bounds, locations[i].color);
-		std::string locationName = "Location" + (i + 1) + locations[i].name;
-		DrawText(locationName.c_str(), locations[i].bounds.x, locations[i].bounds.y, 10, BLACK);
+		std::string locationName = locations[i].name;
+		DrawText(locationName.c_str(), locations[i].bounds.x+3, locations[i].bounds.y+3, 10, BLACK);
 	}
 }
 std::string money{};
@@ -422,25 +425,27 @@ void VillageScreen(LocationInfo info) {
 	if (!showDialog) {
 		HandleInput();
 	}
+
 	else {
 		//Обработка нажатия на кнопки в диалоговом окне
 		Vector2 mouse = GetMousePosition();
+		int current_money = std::stoi(money);
 		if (CheckCollisionPointRec(mouse, shopExit.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
 			showDialog = false;
 		}
-		else if (CheckCollisionPointRec(mouse, shopBonus1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+		else if (CheckCollisionPointRec(mouse, shopBonus1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money>=10) {
 			player->attack_bonus += 3;
 			money = std::to_string(std::stoi(money) - 10);
 		}
-		else if (CheckCollisionPointRec(mouse, shopBonus2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+		else if (CheckCollisionPointRec(mouse, shopBonus2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money >= 10) {
 			player->SetMaxHealth(player->current_health + 20);
 			money = std::to_string(std::stoi(money) - 10);
 		}
-		else if (CheckCollisionPointRec(mouse, shopBonus3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+		else if (CheckCollisionPointRec(mouse, shopBonus3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money >= 30) {
 			player->stamina_bonus += 5;
 			money = std::to_string(std::stoi(money) - 30);
 		}
-		else if (CheckCollisionPointRec(mouse, shopBonus4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+		else if (CheckCollisionPointRec(mouse, shopBonus4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money >= 20) {
 			player->regen_bonus += 1;
 			money = std::to_string(std::stoi(money) - 20);
 		}
@@ -455,10 +460,10 @@ void VillageScreen(LocationInfo info) {
 	//DrawEnemy(enemy);
 	ClearBackground(GRAY);
 	DrawTexture(info.Texture, 0, 0, WHITE);
-	DrawPlayer(player_location);
 	DrawMoney();
 	DrawRectangleRec(npc.body, npc.color);
 	DrawRectangleRec(chest.body, chest.color);
+	DrawPlayer(player_location);
 	if (showDialog) {
 		//Отрисовка диалогового окна
 		DrawRectangleRec(shop.body, shop.color);
@@ -510,9 +515,9 @@ void ForestScreen(LocationInfo& info) {
 	// Отрисовка текстуры
 	DrawTexture(info.Texture, 0, 0, WHITE); // Отрисовка текстуры в верхнем левом углу
 	DrawMoney();
-	DrawPlayer(player_location); // Отрисовка игрока
 	DrawRectangleRec(chest.body, chest.color);
 	DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
+	DrawPlayer(player_location); // Отрисовка игрока
 	EndDrawing();
 }
 
@@ -524,6 +529,7 @@ void CaveScreen(LocationInfo info) {
 	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { chest1_body })) {
 		if (IsKeyPressed(KEY_ENTER)) {
 			money = std::to_string(std::stoi(money) + 1000);
+			chest1_body = { 0,0,0,0 };
 		}
 	}
 
@@ -548,10 +554,10 @@ void CaveScreen(LocationInfo info) {
 	//DrawEnemy(enemy);
 	ClearBackground(BROWN);
 	DrawTexture(info.Texture, 0, 0, WHITE);
-	DrawPlayer(player_location);
 	DrawMoney();
 	DrawRectangleRec(chest1.body, chest1.color);
 	DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
+	DrawPlayer(player_location);
 	EndDrawing();
 }
 
@@ -587,10 +593,10 @@ void CastleScreen(LocationInfo info) {
 	Texture();
 	ClearBackground(BLUE);
 	DrawTexture(info.Texture, 0, 0, WHITE);
-	DrawPlayer(player_location);
 	DrawMoney();
 	DrawRectangleRec(chest2.body, chest2.color);
 	DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
+	DrawPlayer(player_location);
 	EndDrawing();
 }
 
@@ -630,7 +636,7 @@ void BattleScreen(LocationInfo info) {
 	if (IsKeyPressed(KEY_Q))
 	{
 		currentLocation = 0;
-		player->SetHealth(100);
+		player->SetHealth(player->max_health);
 		player->SetStamina(0);
 		player->showBars = false;
 		player->speed = { 0,0 };
@@ -648,10 +654,10 @@ void BattleScreen(LocationInfo info) {
 	{
 		if (player->current_health <= 0 or currentEnemy->health <= 0) {
 			game_over = true;
-			money = std::to_string(std::stoi(money) + 15);
+			if(player->current_health>0)
+				money = std::to_string(std::stoi(money) + currentEnemy->healthBar.GetMaxValue()/10);
 		}
 		Vector2 mouse = GetMousePosition();
-
 
 		if (CheckCollisionPointRec(mouse, button.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 5) {
 			player->speed = { 30,0 };
@@ -670,6 +676,7 @@ void BattleScreen(LocationInfo info) {
 			player->current_attack = 35;
 			player->SetStamina(player->current_stamina - 30);
 		}
+
 		if (CheckCollisionPointRec(mouse, button3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 15) {
 			player->speed = { 30,0 };
 			currentEnemy->attack = 0;
@@ -678,6 +685,7 @@ void BattleScreen(LocationInfo info) {
 			player->SetStamina(player->current_stamina - 11);
 
 		}
+
 		if (CheckCollisionPointRec(mouse, button4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 20) {
 			player->speed = { 30,0 };
 			player->SetHealth(player->current_health + 20 + player->regen_bonus);
