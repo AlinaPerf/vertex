@@ -146,6 +146,12 @@ struct Player {
 		this->current_stamina = next;
 		this->staminaBar.SetValue(next);
 	}
+	void SetMaxStamina(int next) {
+		this->current_stamina= 10;
+		this->max_stamina = next;
+		this->staminaBar.SetMaxValue(next);
+		this->staminaBar.SetValue(10);
+	}
 };
 
 struct Enemy {
@@ -389,21 +395,25 @@ ShopButton shopExit = {
 	RED,
 };
 Rectangle shopBonus1_body = { 150,175,200,200 };
+int item1_cost = 10;
 ShopButton shopBonus1 = {
 	shopBonus1_body,
 	VIOLET,
 };
 Rectangle shopBonus2_body = { 450,175,200,200 };
+int item2_cost = 10;
 ShopButton shopBonus2 = {
 	shopBonus2_body,
 	GREEN,
 };
 Rectangle shopBonus3_body = { 750,175,200,200 };
+int item3_cost = 30;
 ShopButton shopBonus3 = {
 	shopBonus3_body,
 	GRAY,
 };
 Rectangle shopBonus4_body = { 1050,175,200,200 };
+int item4_cost = 20;
 ShopButton shopBonus4 = {
 	shopBonus4_body,
 	BLUE,
@@ -433,21 +443,26 @@ void VillageScreen(LocationInfo info) {
 		if (CheckCollisionPointRec(mouse, shopExit.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
 			showDialog = false;
 		}
-		else if (CheckCollisionPointRec(mouse, shopBonus1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money>=10) {
+		else if (CheckCollisionPointRec(mouse, shopBonus1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money>= item1_cost) {
 			player->attack_bonus += 3;
-			money = std::to_string(std::stoi(money) - 10);
+			money = std::to_string(std::stoi(money) - item1_cost);
+			item1_cost *= 2;
 		}
-		else if (CheckCollisionPointRec(mouse, shopBonus2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money >= 10) {
+		else if (CheckCollisionPointRec(mouse, shopBonus2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money >= item2_cost) {
 			player->SetMaxHealth(player->current_health + 20);
-			money = std::to_string(std::stoi(money) - 10);
+			money = std::to_string(std::stoi(money) - item2_cost);
+			item2_cost *= 2;
 		}
-		else if (CheckCollisionPointRec(mouse, shopBonus3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money >= 30) {
-			player->stamina_bonus += 5;
-			money = std::to_string(std::stoi(money) - 30);
+		else if (CheckCollisionPointRec(mouse, shopBonus3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money >= item3_cost) {
+			player->SetMaxStamina(player->max_stamina + 5);
+			player->stamina_bonus += 1;
+			money = std::to_string(std::stoi(money) - item3_cost);
+			item3_cost *= 2;
 		}
-		else if (CheckCollisionPointRec(mouse, shopBonus4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money >= 20) {
+		else if (CheckCollisionPointRec(mouse, shopBonus4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && current_money >= item4_cost) {
 			player->regen_bonus += 1;
-			money = std::to_string(std::stoi(money) - 20);
+			money = std::to_string(std::stoi(money) - item4_cost);
+			item4_cost *= 2;
 		}
 	}
 	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { chest_body })) {
@@ -477,9 +492,13 @@ void VillageScreen(LocationInfo info) {
 			{ shopExit.body.x, shopExit.body.y + shopExit.body.height },
 			4, RED);
 		DrawRectangleRec(shopBonus1.body, shopBonus1.color);
+		DrawText(std::to_string(item1_cost).c_str(), shopBonus1.body.x, shopBonus1.body.y+shopBonus1.body.height+10,14,BLACK);
 		DrawRectangleRec(shopBonus2.body, shopBonus2.color);
+		DrawText(std::to_string(item2_cost).c_str(), shopBonus2.body.x, shopBonus2.body.y+shopBonus2.body.height+10,14,BLACK);
 		DrawRectangleRec(shopBonus3.body, shopBonus3.color);
+		DrawText(std::to_string(item3_cost).c_str(), shopBonus3.body.x, shopBonus3.body.y+shopBonus3.body.height+10,14,BLACK);
 		DrawRectangleRec(shopBonus4.body, shopBonus4.color);
+		DrawText(std::to_string(item4_cost).c_str(), shopBonus4.body.x, shopBonus4.body.y+shopBonus4.body.height+10,14,BLACK);
 	}
 	EndDrawing();
 }
