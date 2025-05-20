@@ -757,10 +757,20 @@ void BattleScreen(LocationInfo info) {
 	DrawEnemy(currentEnemy);
 	if (!game_over) {
 		DrawRectangleRec(button.body, button.color);
+		DrawText(TextFormat("Lol attack"), button.body.x, button.body.y + button.body.height -20, 14, BLACK);
+	
 		DrawRectangleRec(button1.body, button1.color);
+		DrawText(TextFormat("Medium attack"), button1.body.x, button1.body.y + button1.body.height - 20, 14, BLACK);
+
 		DrawRectangleRec(button2.body, button2.color);
+		DrawText(TextFormat("Hard attack"), button2.body.x, button2.body.y + button2.body.height - 20, 14, BLACK);
+
 		DrawRectangleRec(button3.body, button3.color);
+		DrawText(TextFormat("Deffens"), button3.body.x, button3.body.y + button3.body.height - 20, 14, WHITE);
+
 		DrawRectangleRec(button4.body, button4.color);
+		DrawText(TextFormat("Regen"), button4.body.x, button4.body.y + button4.body.height - 20, 14, WHITE);
+
 	}
 	else {
 		DrawText("Game over", 100, 100, 50, BLACK);
