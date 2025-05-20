@@ -494,12 +494,16 @@ void VillageScreen(LocationInfo info) {
 			4, RED);
 		DrawRectangleRec(shopBonus1.body, shopBonus1.color);
 		DrawText(std::to_string(item1_cost).c_str(), shopBonus1.body.x, shopBonus1.body.y+shopBonus1.body.height+10,14,BLACK);
+		DrawText(TextFormat("Attack bonus"), shopBonus1.body.x, shopBonus1.body.y+shopBonus1.body.height+25,14,BLACK);
 		DrawRectangleRec(shopBonus2.body, shopBonus2.color);
 		DrawText(std::to_string(item2_cost).c_str(), shopBonus2.body.x, shopBonus2.body.y+shopBonus2.body.height+10,14,BLACK);
+		DrawText(TextFormat("Max Health"), shopBonus2.body.x, shopBonus2.body.y+shopBonus2.body.height+25,14,BLACK);
 		DrawRectangleRec(shopBonus3.body, shopBonus3.color);
 		DrawText(std::to_string(item3_cost).c_str(), shopBonus3.body.x, shopBonus3.body.y+shopBonus3.body.height+10,14,BLACK);
+		DrawText(TextFormat("Max Stamina"), shopBonus3.body.x, shopBonus3.body.y+shopBonus3.body.height+25,14,BLACK);
 		DrawRectangleRec(shopBonus4.body, shopBonus4.color);
 		DrawText(std::to_string(item4_cost).c_str(), shopBonus4.body.x, shopBonus4.body.y+shopBonus4.body.height+10,14,BLACK);
+		DrawText(TextFormat("Regen bonus"), shopBonus4.body.x, shopBonus4.body.y+shopBonus4.body.height+25,14,BLACK);
 	}
 	EndDrawing();
 }
