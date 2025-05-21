@@ -233,9 +233,16 @@ const char* Village_filename = "./Assets/Locations/village.png";
 const char* Start_filename = "./Assets/Locations/start.png";
 const char* Forest_filename = "./Assets/Locations/forest.png";
 const char* Priest_filename = "./Assets/Player/Priest.png";
+const char* Portal_filename = "./Assets/Locations/portal.png";
+const char* Battle_portal_filename = "./Assets/Locations/battle_portal.png";
+const char* Chest_filename = "./Assets/Locations/chest.png";
+
+Texture2D portal_texture;
+Texture2D battle_portal_texture;
+Texture2D chest_texture;
 
 // Инициализация окна    
-const int screenWidth = 1600;
+const int screenWidth = 1200;
 const int screenHeight = 800;
 
 Image image = LoadImage(Wind_filename);
@@ -273,15 +280,18 @@ void DrawLocations() {
 
 	for (int i = 1; i < locations.size(); i++)
 	{
-		DrawRectangleRec(locations[i].bounds, locations[i].color);
+		//DrawRectangleRec(locations[i].bounds, locations[i].color);
+		DrawRectangleRec({ locations[i].bounds.x - 5,locations[i].bounds.y - 25,90,30 }, BLACK);
+		DrawTexture(portal_texture, locations[i].bounds.x-20, locations[i].bounds.y,RAYWHITE);
 		std::string locationName = locations[i].name;
-		DrawText(locationName.c_str(), locations[i].bounds.x+3, locations[i].bounds.y+3, 10, BLACK);
+		DrawText(locationName.c_str(), locations[i].bounds.x, locations[i].bounds.y-20, 24, WHITE);
 	}
 }
 std::string money{};
 //денюжки
 void DrawMoney() {
-	DrawText(/*TextFormat("")*/money.c_str(), 10, 20, 20, BLACK);
+		DrawRectangleRec({ 5,15,80,30 }, BLACK);
+	DrawText(/*TextFormat("")*/money.c_str(), 10, 20, 20, WHITE);
 };
 
 /// <summary>
@@ -349,10 +359,11 @@ void LocationScreen(LocationInfo info) {
 	DrawLocations(); // Отрисовка всех локаций
 	DrawMoney();
 
-	DrawText(TextFormat("Welcome"), 3*screenWidth/4, 3*screenHeight/4, 25, WHITE);
-	DrawText(TextFormat("Click W, A, S, D to move around"), 3*screenWidth / 4,3*screenHeight / 4 + 30, 25, WHITE);
-	DrawText(TextFormat("Click Enter to enter a location"), 3*screenWidth / 4, 3*screenHeight / 4 + 55, 25, WHITE);
-	DrawText(TextFormat("Click Q to exit a location"), 3*screenWidth / 4, 3*screenHeight / 4 + 80, 25, WHITE);
+	DrawRectangleRec({ 3 * screenWidth / 5-10, 3 * screenHeight / 4-10,340,120}, BLACK);
+	DrawText(TextFormat("Welcome"), 3*screenWidth/5, 3*screenHeight/4, 20, WHITE);
+	DrawText(TextFormat("Click W, A, S, D to move around"), 3*screenWidth / 5,3*screenHeight / 4 + 30, 20, WHITE);
+	DrawText(TextFormat("Click Enter to enter a location"), 3*screenWidth / 5, 3*screenHeight / 4 + 55, 20, WHITE);
+	DrawText(TextFormat("Click Q to exit a location"), 3*screenWidth / 5, 3*screenHeight / 4 + 80, 20, WHITE);
 
 
 	EndDrawing();
@@ -385,35 +396,35 @@ NPCButton npc = {
 	npc_body,
 	BLUE,
 };
-Rectangle shop_body = { 100,50,1400,700 };
+Rectangle shop_body = { 100,50,1000,700 };
 ShopButton shop = {
 	shop_body,
-	YELLOW,
+	DARKBROWN,
 };
 Rectangle shopExit_body = { 150,75,25,25 };
 ShopButton shopExit = {
 	shopExit_body,
 	RED,
 };
-Rectangle shopBonus1_body = { 150,175,200,200 };
+Rectangle shopBonus1_body = { 200,175,150,200 };
 int item1_cost = 10;
 ShopButton shopBonus1 = {
 	shopBonus1_body,
-	VIOLET,
+	RED,
 };
-Rectangle shopBonus2_body = { 450,175,200,200 };
+Rectangle shopBonus2_body = { 400,175,150,200 };
 int item2_cost = 10;
 ShopButton shopBonus2 = {
 	shopBonus2_body,
 	GREEN,
 };
-Rectangle shopBonus3_body = { 750,175,200,200 };
+Rectangle shopBonus3_body = { 600,175,150,200 };
 int item3_cost = 30;
 ShopButton shopBonus3 = {
 	shopBonus3_body,
-	GRAY,
+	VIOLET,
 };
-Rectangle shopBonus4_body = { 1050,175,200,200 };
+Rectangle shopBonus4_body = { 800,175,150,200 };
 int item4_cost = 20;
 ShopButton shopBonus4 = {
 	shopBonus4_body,
@@ -479,10 +490,12 @@ void VillageScreen(LocationInfo info) {
 	DrawMoney();
 	DrawRectangleRec(npc.body, npc.color);
 	DrawRectangleRec(chest.body, chest.color);
+	DrawTexture(chest_texture,chest.body.x-40,chest.body.y-40,RAYWHITE);
 	DrawPlayer(player_location);
 	if (showDialog) {
 		//Отрисовка диалогового окна
 		DrawRectangleRec(shop.body, shop.color);
+		DrawRectangleRec({ shop.body.x + 5,shop.body.y + 5,shop.body.width - 10,shop.body.height - 10 }, BROWN);
 		//DrawRectangleRec(shopExit.body, shopExit.color);
 		DrawLineEx(
 			{ shopExit.body.x, shopExit.body.y}, 
@@ -513,11 +526,11 @@ void ForestScreen(LocationInfo& info) {
 	if (IsKeyPressed(KEY_Q)) {
 		currentLocation = 0; // Возврат в основное меню
 	}
-	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { chest_body })) {
+	/*if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { chest_body })) {
 		if (IsKeyPressed(KEY_ENTER)) {
 			money = std::to_string(std::stoi(money) + 100);
 		}
-	}
+	}*/
 
 	if (CheckCollisionPointRec({ player_location->position.x,player_location->position.y }, { ButtonBattle_body })) {
 		if (IsKeyPressed(KEY_ENTER)) {
@@ -539,8 +552,9 @@ void ForestScreen(LocationInfo& info) {
 	// Отрисовка текстуры
 	DrawTexture(info.Texture, 0, 0, WHITE); // Отрисовка текстуры в верхнем левом углу
 	DrawMoney();
-	DrawRectangleRec(chest.body, chest.color);
-	DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
+	//DrawRectangleRec(chest.body, chest.color);
+	//DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
+	DrawTexture(battle_portal_texture, ButtonBattle.body.x, ButtonBattle.body.y, RAYWHITE);
 	DrawPlayer(player_location); // Отрисовка игрока
 	EndDrawing();
 }
@@ -580,7 +594,9 @@ void CaveScreen(LocationInfo info) {
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawMoney();
 	DrawRectangleRec(chest1.body, chest1.color);
-	DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
+	DrawTexture(chest_texture, chest1.body.x - 40, chest1.body.y - 40, RAYWHITE);
+	//DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
+	DrawTexture(battle_portal_texture, ButtonBattle.body.x, ButtonBattle.body.y, RAYWHITE);
 	DrawPlayer(player_location);
 	EndDrawing();
 }
@@ -619,7 +635,9 @@ void CastleScreen(LocationInfo info) {
 	DrawTexture(info.Texture, 0, 0, WHITE);
 	DrawMoney();
 	DrawRectangleRec(chest2.body, chest2.color);
-	DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
+	DrawTexture(chest_texture, chest2.body.x - 40, chest2.body.y - 40, RAYWHITE);
+	//DrawRectangleRec(ButtonBattle.body, ButtonBattle.color);
+	DrawTexture(battle_portal_texture, ButtonBattle.body.x, ButtonBattle.body.y, RAYWHITE);
 	DrawPlayer(player_location);
 	EndDrawing();
 }
@@ -643,12 +661,12 @@ Button button2 = {
 	BLUE,
 };
 
-Rectangle button3_body = { 1490,650,100,50 };
+Rectangle button3_body = { 1080,650,100,50 };
 Button button3 = {
 	button3_body,
 	RED,
 };
-Rectangle button4_body = { 1370,650,100,50 };
+Rectangle button4_body = { 960,650,100,50 };
 Button button4 = {
 	button4_body,
 	BLACK,
@@ -684,25 +702,25 @@ void BattleScreen(LocationInfo info) {
 		Vector2 mouse = GetMousePosition();
 
 		if (CheckCollisionPointRec(mouse, button.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 5) {
-			player->speed = { 30,0 };
+			player->speed = { 15,0 };
 			player->current_attack = 10;
 			player->SetStamina(player->current_stamina - 5);
 		}
 
 		if (CheckCollisionPointRec(mouse, button1.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 10) {
-			player->speed = { 30,0 };
+			player->speed = { 15,0 };
 			player->current_attack = 15;
 			player->SetStamina(player->current_stamina - 10);
 		}
 
 		if (CheckCollisionPointRec(mouse, button2.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 30) {
-			player->speed = { 30,0 };
+			player->speed = { 15,0 };
 			player->current_attack = 35;
 			player->SetStamina(player->current_stamina - 30);
 		}
 
 		if (CheckCollisionPointRec(mouse, button3.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 15) {
-			player->speed = { 30,0 };
+			player->speed = { 15,0 };
 			currentEnemy->attack = 0;
 			player->current_attack = 0;
 			currentEnemy->SetStamina(currentEnemy->stamina - 25);
@@ -711,14 +729,14 @@ void BattleScreen(LocationInfo info) {
 		}
 
 		if (CheckCollisionPointRec(mouse, button4.body) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && battle_turn_counter % 2 == 0 && player->speed.x == 0 && player->current_stamina >= 20) {
-			player->speed = { 30,0 };
+			player->speed = { 15,0 };
 			player->SetHealth(player->current_health + 20 + player->regen_bonus);
 			player->current_attack = 0;
 			player->SetStamina(player->current_stamina - 20);
 		}
 
 		if (CheckCollisionRecs({ player->position.x,player->position.y,100,100 }, { currentEnemy->position.x,currentEnemy->position.y,100,100 }) && battle_turn_counter % 2 == 0) {
-			player->speed = { -30,0 };
+			player->speed = { -15,0 };
 			currentEnemy->SetHealth(currentEnemy->health - player->current_attack - player->attack_bonus);
 		}
 		if (player->speed.x < 0) {
@@ -730,9 +748,9 @@ void BattleScreen(LocationInfo info) {
 		player->SetPosition(Vector2Add(player->position, player->speed));
 
 		if (battle_turn_counter % 2 == 1 && currentEnemy->speed.x == 0)
-			currentEnemy->speed = { -30,0 };
+			currentEnemy->speed = { -15,0 };
 		if (CheckCollisionRecs({ currentEnemy->position.x,currentEnemy->position.y,100,100 }, { player->position.x,player->position.y,100,100 }) && battle_turn_counter % 2 == 1) {
-			currentEnemy->speed = { 30,0 };
+			currentEnemy->speed = { 15,0 };
 			player->SetHealth(player->current_health - GetRandomValue(currentEnemy->attack - 10, currentEnemy->attack + 10));
 		}
 		if (currentEnemy->speed.x > 0) {
@@ -806,7 +824,7 @@ void InitializeGame() {
 
 	}
 	LocationInfo location2 = {
-		{ 1000, 150, 75, 75 },
+		{ 900, 250, 75, 75 },
 			"Forest",
 			GREEN,
 			1,
@@ -823,7 +841,7 @@ void InitializeGame() {
 
 	}
 	LocationInfo location3 = {
-		{ 150, 600, 75, 75 },
+		{ 300, 600, 75, 75 },
 		"Cave",
 			BROWN,
 			2,
@@ -840,7 +858,7 @@ void InitializeGame() {
 
 	}
 	LocationInfo location4 = {
-		{ 150, 150, 75, 75 },
+		{ 200, 200, 75, 75 },
 		"Castle",
 			BLUE,
 			3,
@@ -857,7 +875,7 @@ void InitializeGame() {
 
 	}
 	LocationInfo location5 = {
-		{ 1000, 600, 75, 75 },
+		{ 800, 400, 75, 75 },
 		"Village",
 			GRAY,
 			4,
@@ -885,8 +903,7 @@ void InitializeGame() {
 	image = LoadImage(Priest_filename);
 	if (image.data != NULL)
 	{
-		ImageCrop(&image, { 51,133,41,58 });
-		ImageResize(&image, 50, 50);
+		ImageResize(&image, 100, 100);
 		texture = LoadTextureFromImage(image);
 
 	}
@@ -896,13 +913,12 @@ void InitializeGame() {
 		100,
 		10,
 		0,
-		50,
+		150,
 		texture,
 		{ 0,0 }
 	);
 	if (image.data != NULL)
 	{
-		ImageCrop(&image, { 51,133,41,58 });
 		ImageResize(&image, 100, 100);
 		texture = LoadTextureFromImage(image);
 
@@ -948,11 +964,31 @@ void InitializeGame() {
 	};
 	enemies.push_back(enemy);
 
+
+	image = LoadImage(Portal_filename);
+	if (image.data != NULL)
+	{
+		ImageResize(&image, 100, 100);
+		portal_texture = LoadTextureFromImage(image);
+	}
+	image = LoadImage(Battle_portal_filename);
+	if (image.data != NULL)
+	{
+		ImageResize(&image, 100, 100);
+		battle_portal_texture = LoadTextureFromImage(image);
+	}
+	image = LoadImage(Chest_filename);
+	if (image.data != NULL)
+	{
+		ImageResize(&image, 100, 100);
+		chest_texture = LoadTextureFromImage(image);
+	}
+
 }
 
 int main() {
 
-	InitWindow(screenWidth, screenHeight, "Game with Locations");
+	InitWindow(screenWidth, screenHeight, "Vertex");
 	std::string content = "";
 	getFileContents(base_directory, content);
 	money = content;
@@ -985,12 +1021,7 @@ int main() {
 		default:
 			break;
 		}
-
-		//LocationScreen();
-		//BattleScreen();
 	}
-
-	// Закрытие окна
 	CloseWindow();
 	return 0;
 }
